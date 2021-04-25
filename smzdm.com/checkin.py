@@ -90,6 +90,6 @@ def main(cookie):
 
 if __name__ == "__main__":
     if COOKIE_SMZDM:
-        print("----------什么值得买开始签到----------")
+        logging.info("----------什么值得买开始签到----------")
         main(COOKIE_SMZDM)
-        print("----------什么值得买签到完毕----------")
+        logging.info("----------什么值得买签到完毕----------")
