@@ -53,10 +53,10 @@ def signin(cookie, **kwargs):
         prefix = "[SMZDM]" if CI else f"[SMZDM:{member}]"
         logging.info(f"{prefix} {message}")
 
-    def error(message):
+    def error(message, *args):
         prefix = "[SMZDM]" if CI else f"[SMZDM:{member}]"
         logging.error(f"{prefix} {message}")
-        notify(f"[SMZDM:{member}] {message}")
+        notify(f"[SMZDM:{member}] {message}", *args)
 
     t = round(int(time.time() * 1000))
 
@@ -64,7 +64,7 @@ def signin(cookie, **kwargs):
     response = json.loads(str(r.content, "utf-8"))
     logging.debug(response)
     if response.get("error_code", 99) != 0:
-        error(response.get("error_msg", "未知错误"))
+        error(response.get("error_msg", "未知错误"), json.dumps(response))
     else:
         add_point = response.get("data", {}).get("add_point", 0)
         continue_checkin_days = response.get(
@@ -80,10 +80,11 @@ def main(cookie):
         clist = cookie.split("\n")
     i = 0
     for i in range(len(clist)):
+        logging.info(f"第 {i+1} 个账号开始签到")
         try:
             signin(clist[i])
         except Exception as ex:
-            logging.error(repr(ex))
+            logging.error(traceback.format_exc())
             notify(f"[SMZMD:Exception]", traceback.format_exc())
 
 

@@ -57,10 +57,10 @@ def signin(cookie, **kwargs):
         prefix = "[V2EX]" if CI else f"[V2EX:{member}]"
         logging.info(f"{prefix} {message}")
 
-    def error(message):
+    def error(message, *args):
         prefix = "[V2EX]" if CI else f"[V2EX:{member}]"
         logging.error(f"{prefix} {message}")
-        notify(f"[V2EX:{member}] {message}")
+        notify(f"[V2EX:{member}] {message}", *args)
 
     # 获取 once
     r = get(DAILY_URL)
@@ -68,7 +68,6 @@ def signin(cookie, **kwargs):
     if result:
         member = result[1]
     if "需要先登录" in r.text:
-        # TODO pusher
         error("Cookie失效")
         return
     elif "每日登录奖励已领取" in r.text:
@@ -108,6 +107,7 @@ def main(cookie):
         try:
             signin(clist[i])
         except Exception as ex:
+            logging.error(traceback.format_exc())
             notify(f"[V2EX:Exception]", traceback.format_exc())
 
 
