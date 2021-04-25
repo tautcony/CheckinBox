@@ -7,6 +7,7 @@ import re
 import sys
 import time
 import requests
+import traceback
 
 
 # init logger
@@ -83,7 +84,7 @@ def main(cookie):
             signin(clist[i])
         except Exception as ex:
             logging.error(repr(ex))
-            notify(f"[SMZMD:Error] {repr(ex)}")
+            notify(f"[SMZMD:Exception]", traceback.format_exc())
 
 
 if __name__ == "__main__":

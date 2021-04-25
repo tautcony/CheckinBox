@@ -5,6 +5,7 @@ import os
 import re
 import sys
 import requests
+import traceback
 
 
 # init logger
@@ -107,7 +108,7 @@ def main(cookie):
         try:
             signin(clist[i])
         except Exception as ex:
-            notify(f"[V2EX:Error] {repr(ex)}")
+            notify(f"[V2EX:Exception]", traceback.format_exc())
 
 
 if __name__ == "__main__":
