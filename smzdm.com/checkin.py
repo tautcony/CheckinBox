@@ -19,7 +19,7 @@ app_log.setLevel(logging.INFO)
 
 
 try:
-    sys.path.append('.')
+    sys.path.append(".")
     from notify import notify
 except:
     logging.error("无法加载notify函数")
@@ -37,12 +37,12 @@ def signin(cookie):
     member = "/"
     s = requests.Session()
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        'accept-encoding': 'gzip, deflate, br',
-        'accept-language': 'en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7',
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
         "Cookie": cookie,
-        'Referer': 'https://www.smzdm.com/'
+        "Referer": "https://www.smzdm.com/"
     }
 
     def get(url): return s.get(url, headers=headers, timeout=120)

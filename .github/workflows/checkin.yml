@@ -32,6 +32,7 @@ jobs:
 
       - name: main
         env:
+          PYTHONIOENCODING: utf-8
           SCKEY: ${{ secrets.SCKEY }}
           SCTKEY: ${{ secrets.SCTKEY }}
           Skey: ${{ secrets.Skey }}

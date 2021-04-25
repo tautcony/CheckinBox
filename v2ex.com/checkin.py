@@ -18,7 +18,7 @@ app_log.setLevel(logging.INFO)
 
 
 try:
-    sys.path.append('.')
+    sys.path.append(".")
     from notify import notify
 except:
     logging.error("无法加载notify函数")
@@ -43,11 +43,11 @@ def signin(cookie, **kwargs):
     member = "/"
     s = requests.Session()
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        'accept-encoding': 'gzip, deflate, br',
-        'accept-language': 'en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7',
-        'Cookie': cookie
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        "accept-encoding": "gzip, deflate",
+        "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
+        "Cookie": cookie
     }
 
     def get(url): return s.get(url, headers=headers, timeout=120)
@@ -66,12 +66,12 @@ def signin(cookie, **kwargs):
     result = RE_USER.search(r.text)
     if result:
         member = result[1]
-    if '需要先登录' in r.text:
+    if "需要先登录" in r.text:
         # TODO pusher
         error("Cookie失效")
         return
-    elif '每日登录奖励已领取' in r.text:
-        info('每日登录奖励已领取')
+    elif "每日登录奖励已领取" in r.text:
+        info("每日登录奖励已领取")
         return
     once = RE_ONCE.search(r.text)
     if once:
@@ -84,12 +84,12 @@ def signin(cookie, **kwargs):
     sign = get(SIGN_URL.format(once))
     # 获取签到情况
     r = get(DAILY_URL)
-    if '每日登录奖励已领取' in r.text:
-        info('签到成功')
+    if "每日登录奖励已领取" in r.text:
+        info("签到成功")
         # 查看获取到的数量
         r = get(BALANCE_URL)
         balance = RE_BALANCE.search(r.text)
-        info(balance[0] if balance else "请检查'RE_BALANCE'")
+        info(balance[0] if balance else "请检查`RE_BALANCE`")
     else:
         error("签到失败")
     return
