@@ -44,5 +44,6 @@ jobs:
           tg_api_host: ${{ secrets.tg_api_host }}
           cookie_smzdm: ${{ secrets.cookie_smzdm }}
           cookie_v2ex: ${{ secrets.cookie_v2ex }}
+          cookie_u2: ${{ secrets.cookie_u2 }}
         run: |
           find . -type f -name "checkin.py" -exec pipenv run python3 {} \;
