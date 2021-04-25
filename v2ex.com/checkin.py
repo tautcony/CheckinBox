@@ -107,7 +107,7 @@ def main(cookie):
         try:
             signin(clist[i])
         except Exception as ex:
-            logging.error(repr(ex))
+            notify(f"[V2EX:Error] {repr(ex)}")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 import logging
+import json
 import os
 import re
 import sys
@@ -33,7 +34,7 @@ CI = os.environ.get("CI")
 COOKIE_SMZDM = os.environ.get("cookie_smzdm")
 
 
-def signin(cookie):
+def signin(cookie, **kwargs):
     member = "/"
     s = requests.Session()
     headers = {
@@ -59,7 +60,7 @@ def signin(cookie):
     t = round(int(time.time() * 1000))
 
     r = get(SIGN_URL.format(t))
-    response = r.json()
+    response = json.loads(str(r.content, "utf-8"))
     logging.debug(response)
     if response.get("error_code", 99) != 0:
         error(response.get("error_msg", "未知错误"))
@@ -82,6 +83,7 @@ def main(cookie):
             signin(clist[i])
         except Exception as ex:
             logging.error(repr(ex))
+            notify(f"[SMZMD:Error] {repr(ex)}")
 
 
 if __name__ == "__main__":
