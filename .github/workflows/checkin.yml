@@ -32,7 +32,7 @@ jobs:
 
       - name: main
         env:
-          LOG_LEVEL: INFO,
+          LOG_LEVEL: INFO
           GITHUB_NOTIFICATION: 1
           SCKEY: ${{ secrets.SCKEY }}
           SCTKEY: ${{ secrets.SCTKEY }}
