@@ -15,7 +15,7 @@ DAILY_URL = "https://www.v2ex.com/mission/daily"
 SIGN_URL = "https://www.v2ex.com/mission/daily/redeem?once={0}"
 BALANCE_URL = "https://www.v2ex.com/balance"
 
-COOKIE = os.environ.get("cookie_v2ex")
+COOKIE = os.environ.get("COOKIE_V2EX")
 
 
 class V2EXCheckIn(CheckIn):

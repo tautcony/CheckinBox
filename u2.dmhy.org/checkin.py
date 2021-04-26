@@ -10,7 +10,7 @@ sys.path.append(".")
 from lib.checkbase import CheckIn
 
 
-COOKIE = os.environ.get("cookie_u2")
+COOKIE = os.environ.get("COOKIE_U2")
 
 
 class U2CheckIn(CheckIn):

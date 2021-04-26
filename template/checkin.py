@@ -7,8 +7,7 @@ sys.path.append(".")
 from lib.checkbase import CheckIn
 
 
-CI = os.environ.get("CI")
-COOKIE = os.environ.get("cookie_sample")
+COOKIE = os.environ.get("COOKIE_TEMPLATE")
 
 
 class SampleCheckIn(CheckIn):
@@ -17,4 +16,4 @@ class SampleCheckIn(CheckIn):
 
 
 if __name__ == "__main__":
-    SampleCheckIn("SAMPLE", COOKIE, CI).main()
+    SampleCheckIn("SAMPLE", COOKIE).main()

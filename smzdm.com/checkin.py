@@ -12,7 +12,7 @@ from lib.logger import app_logger as logger
 
 SIGN_URL = "https://zhiyou.smzdm.com/user/checkin/jsonp_checkin?_={0}"
 
-COOKIE = os.environ.get("cookie_smzdm")
+COOKIE = os.environ.get("COOKIE_SMZDM")
 
 
 class SMZDMCheckIn(CheckIn):

@@ -1,7 +1,7 @@
 import os
 import sys
 import traceback
-from typing import Callable, Optional
+from typing import Callable
 
 import requests
 from requests import Response
@@ -74,7 +74,7 @@ class CheckIn(object):
             clist = self.cookies.split("\\n")
         else:
             clist = self.cookies.split("\n")
-        i = 0
+
         for i in range(len(clist)):
             logger.info(f"第 {i+1} 个账号开始签到")
             try:
