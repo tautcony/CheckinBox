@@ -23,9 +23,9 @@ PUSH_PLUS_TOKEN = os.environ.get("PUSH_PLUS_TOKEN")  # https://www.pushplus.plus
 PUSH_PLUS_TOPIC = os.environ.get("PUSH_PLUS_TOPIC")
 
 # 钉钉bot通知
-# 钉钉bot的webhook
+# 钉钉bot webhook的Token
 DD_BOT_TOKEN = os.environ.get("DD_BOT_TOKEN")
-# 密钥
+# 密钥，安全设置选择"加密"
 DD_BOT_SECRET = os.environ.get("DD_BOT_SECRET")
 
 # telegram bot通知
@@ -86,7 +86,7 @@ def cp_notify(title: str, content: str):
     logging.debug(r.text)
 
 
-def dd_notify(title: str, content: str):
+def dd_notify(title: str, content: str, msgtype="text"):
     if not DD_BOT_TOKEN:
         return
     url = f"https://oapi.dingtalk.com/robot/send?access_token={DD_BOT_TOKEN}"
@@ -99,16 +99,24 @@ def dd_notify(title: str, content: str):
         sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
         url = f"{url}&timestamp={timestamp}&sign={sign}"
     data = {
-        "msgtype": "text",
-        "text": {
+        "msgtype": msgtype
+    }
+    if msgtype == "text":
+        data["text"] = {
             "content": f"{title}\n{content}"
         }
-    }
+    elif msgtype == "markdown":
+        data["markdown"] = {
+            "title": title,
+            "text": content
+        }
     r = requests.post(url=url, json=data)
     logging.debug(r.text)
-    resp = r.json()
-    if resp.get("errcode", 99) != 0:
-        logging.error("钉钉消息发送失败")
+    obj: dict = r.json()
+    if obj.get("errcode", -1) != 0:
+        errorcode = obj.get("errcode", -1)
+        errmsg = obj.get("errmsg", "")
+        logging.error(f"钉钉消息发送失败: {errorcode}\n{errmsg}")
     else:
         logging.info("钉钉消息发送成功")
 
