@@ -1,34 +1,43 @@
 import logging
+import time
+import hmac
+import hashlib
+import base64
 import requests
+import urllib.parse
 import os
 
-SCKEY = os.environ.get("SCKEY")  # http://sc.ftqq.com/
-SCTKEY = os.environ.get("SCTKEY")  # http://sct.ftqq.com/
 
-CPkey = os.environ.get("CPkey")  # https://cp.xuthus.cc/
+# 微信server酱通知
+SCKEY = os.environ.get("SCKEY")  # https://sc.ftqq.com/
+SCTKEY = os.environ.get("SCTKEY")  # https://sct.ftqq.com/
+
+# QQ酷推通知
+CP_KEY = os.environ.get("CP_KEY")  # https://cp.xuthus.cc/
 # send, group, psend, pgroup, wx, tg, ww, ding(no send email)
-CPmode = os.environ.get("CPmode")
+CP_MODE = os.environ.get("CP_MODE")
 
-pushplus_token = os.environ.get("pushplus_token")  # http://www.pushplus.plus/
-# pushplus一对多推送需要的"群组编码"，一对一推送不用管
-pushplus_topic = os.environ.get("pushplus_topic")
+# pushplus通知
+PUSH_PLUS_TOKEN = os.environ.get("PUSH_PLUS_TOKEN")  # https://www.pushplus.plus/
+# pushplus一对多推送需要填写"群组编码"
+PUSH_PLUS_TOPIC = os.environ.get("PUSH_PLUS_TOPIC")
 
-# telegram bot的Token，telegram机器人通知推送必填项
-tg_token = os.environ.get("tg_token")
-# 接收通知消息的telegram用户的id，telegram机器人通知推送必填项
-tg_chatid = os.environ.get("tg_chatid")
+# 钉钉bot通知
+# 钉钉bot的webhook
+DD_BOT_TOKEN = os.environ.get("DD_BOT_TOKEN")
+# 密钥
+DD_BOT_SECRET = os.environ.get("DD_BOT_SECRET")
+
+# telegram bot通知
+# Telegram bot的Token
+TG_TOKEN = os.environ.get("TG_TOKEN")
+# 接收通知消息的Telegram用户的id
+TG_CHATID = os.environ.get("TG_CHATID")
 # Telegram api自建的反向代理地址，默认tg官方api=api.telegram.org
-tg_api_host = os.environ.get("tg_api_host")
+TG_API_HOST = os.environ.get("TG_API_HOST")
 
 
-def notify(title, *args, **kwargs):
-    content = ""
-    for item in args:
-        content += item
-        content += "\n"
-    if not content:
-        content = title
-
+def server_notify(title: str, content: str):
     if SCKEY:
         r = requests.post(f"https://sc.ftqq.com/{SCKEY}.send", data={
             "text": title,
@@ -41,33 +50,97 @@ def notify(title, *args, **kwargs):
             "desp": content
         })
         logging.debug(r.text)
-    if pushplus_token:
-        params = {
-            "token": pushplus_token,
-            "title": title,
-            "content": content,
-            "template": "html",
-            "topic": pushplus_topic
+
+
+def push_plus_notify(title: str, content: str):
+    if not PUSH_PLUS_TOKEN:
+        return
+    params = {
+        "token": PUSH_PLUS_TOKEN,
+        "title": title,
+        "content": content,
+        "template": "html"
+    }
+    if PUSH_PLUS_TOPIC:
+        params["topic"] = PUSH_PLUS_TOPIC
+    r = requests.post("https://www.pushplus.plus/send", params=params)
+    logging.debug(r.text)
+    obj: dict = r.json()
+    if obj.get("code", 404) != 200:
+        msg = obj.get("msg", "")
+        data = obj.get("data", "")
+        logging.error(f"pushplus消息发送失败: {msg}\n{data}")
+    else:
+        print("pushplus消息发送成功")
+
+
+def cp_notify(title: str, content: str):
+    if not CP_KEY:
+        return
+    mode = "send" if not CP_MODE else CP_MODE
+    if content:
+        title = title + "\n" + content
+    r = requests.post(f"https://push.xuthus.cc/{mode}/{CP_KEY}", params={
+        "c": title
+    })
+    logging.debug(r.text)
+
+
+def dd_notify(title: str, content: str):
+    if not DD_BOT_TOKEN:
+        return
+    url = f"https://oapi.dingtalk.com/robot/send?access_token={DD_BOT_TOKEN}"
+    if DD_BOT_SECRET:
+        timestamp = str(round(time.time() * 1000))
+        secret_enc = DD_BOT_SECRET.encode('utf-8')
+        string_to_sign = f'{timestamp}\n{DD_BOT_SECRET}'
+        string_to_sign_enc = string_to_sign.encode('utf-8')
+        hmac_code = hmac.new(secret_enc, string_to_sign_enc, digestmod=hashlib.sha256).digest()
+        sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
+        url = f"{url}&timestamp={timestamp}&sign={sign}"
+    data = {
+        "msgtype": "text",
+        "text": {
+            "content": f"{title}\n{content}"
         }
-        if pushplus_topic:
-            params["topic"] = pushplus_topic
-        r = requests.post("https://www.pushplus.plus/send", params=params)
-        if r.json()["code"] != 200:
-            print(r.json())
-            print(f"pushplus推送失败！")
-        logging.debug(r.text)
-    if CPkey:
-        mode = "send" if not CPmode else CPmode
-        if content:
-            title = title + "\n" + content
-        r = requests.post(f"https://push.xuthus.cc/{mode}/{CPkey}", params={
-            "c": title
-        })
-        logging.debug(r.text)
-    if tg_token and tg_chatid:
-        api_host = tg_api_host if tg_api_host else "api.telegram.org"
-        r = requests.post(f"https://{api_host}/bot{tg_token}/sendMessage", data={
-            "chat_id": tg_chatid,
-            "text": f"{title}\n{content}"
-        })
-        logging.debug(r.text)
+    }
+    r = requests.post(url=url, json=data)
+    logging.debug(r.text)
+    resp = r.json()
+    if resp.get("errcode", 99) != 0:
+        logging.error("钉钉消息发送失败")
+    else:
+        logging.info("钉钉消息发送成功")
+
+
+def tg_notify(title: str, content: str):
+    if not (TG_TOKEN and TG_CHATID):
+        return 
+    api_host = TG_API_HOST if TG_API_HOST else "api.telegram.org"
+    r = requests.post(f"https://{api_host}/bot{TG_TOKEN}/sendMessage", data={
+        "chat_id": TG_CHATID,
+        "text": f"{title}\n{content}"
+    })
+    logging.debug(r.text)
+    obj: dict = r.json()
+    if not obj.get("ok", False):
+        error_code = obj.get("error_code", 0)
+        description = obj.get("description", "")
+        logging.error(f"Telegram消息发送失败: {error_code}\n{description}")
+    else:
+        logging.info("Telegram消息发送成功")
+
+
+def notify(title: str, *args):
+    content = "\n".join([str(i) for i in args])
+    if not content:
+        content = title
+
+    if len(title) > 256:
+        title = title[:256]
+
+    server_notify(title, content)
+    push_plus_notify(title, content)
+    cp_notify(title, content)
+    dd_notify(title, content)
+    tg_notify(title, content)
