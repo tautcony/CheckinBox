@@ -15,7 +15,6 @@ DAILY_URL = "https://www.v2ex.com/mission/daily"
 SIGN_URL = "https://www.v2ex.com/mission/daily/redeem?once={0}"
 BALANCE_URL = "https://www.v2ex.com/balance"
 
-CI = os.environ.get("CI")
 COOKIE = os.environ.get("cookie_v2ex")
 
 
@@ -28,16 +27,16 @@ class V2EXCheckIn(CheckIn):
             self.member = result[1]
         if "需要先登录" in r.text:
             error("Cookie失效")
-            return
+            return 1
         elif "每日登录奖励已领取" in r.text:
             info("每日登录奖励已领取")
-            return
+            return 0
         once = RE_ONCE.search(r.text)
         if once:
             once = once[1]
         else:
             error("无法获取once")
-            return
+            return 1
 
         # 签到
         get(SIGN_URL.format(once))
@@ -55,4 +54,4 @@ class V2EXCheckIn(CheckIn):
 
 
 if __name__ == "__main__":
-    V2EXCheckIn("V2EX", COOKIE, CI).main()
+    V2EXCheckIn("V2EX", COOKIE).main()

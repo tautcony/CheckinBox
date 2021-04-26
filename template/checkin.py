@@ -13,7 +13,7 @@ COOKIE = os.environ.get("cookie_sample")
 
 class SampleCheckIn(CheckIn):
     def _checkin(self, get, post, info, error):
-        pass
+        return 0
 
 
 if __name__ == "__main__":

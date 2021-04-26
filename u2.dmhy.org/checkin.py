@@ -10,7 +10,6 @@ sys.path.append(".")
 from lib.checkbase import CheckIn
 
 
-CI = os.environ.get("CI")
 COOKIE = os.environ.get("cookie_u2")
 
 
@@ -22,7 +21,7 @@ class U2CheckIn(CheckIn):
 
         if soup.title.string == "Access Point :: U2":
             error("Cookie失效")
-            return
+            return 1
 
         name = soup.select("a.NexusMaster_Name bdo")
         if len(name) > 0:
@@ -30,7 +29,7 @@ class U2CheckIn(CheckIn):
 
         if "感谢，今天已签到。" in r.text:
             info("感谢，今天已签到。")
-            return
+            return 0
 
         req = soup.find("input", {"name": "req"}).get("value")
         hs = soup.find("input", {"name": "hash"}).get("value")
@@ -47,8 +46,8 @@ class U2CheckIn(CheckIn):
         })
         if "点我重新签到" in r.text:
             error("签到失败", r.text)
-            return
+            return 1
 
 
 if __name__ == "__main__":
-    U2CheckIn("U2", COOKIE, CI).main()
+    U2CheckIn("U2", COOKIE).main()

@@ -32,11 +32,12 @@ jobs:
 
       - name: main
         env:
-          LOG_LEVEL: INFO
+          LOG_LEVEL: INFO,
+          GITHUB_NOTIFICATION: 1
           SCKEY: ${{ secrets.SCKEY }}
           SCTKEY: ${{ secrets.SCTKEY }}
-          Skey: ${{ secrets.Skey }}
-          Smode: ${{ secrets.Smode }}
+          CPkey: ${{ secrets.CPkey }}
+          CPmode: ${{ secrets.CPmode }}
           pushplus_token: ${{ secrets.pushplus_token }}
           pushplus_topic: ${{ secrets.pushplus_topic }}
           tg_token: ${{ secrets.tg_token }}
@@ -46,4 +47,4 @@ jobs:
           cookie_v2ex: ${{ secrets.cookie_v2ex }}
           cookie_u2: ${{ secrets.cookie_u2 }}
         run: |
-          find . -type f -name "checkin.py" -exec pipenv run python3 {} \;
+          bash ./checkin.sh

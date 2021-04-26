@@ -1,3 +1,5 @@
+import os
+import sys
 import traceback
 from typing import Callable, Optional
 
@@ -8,11 +10,15 @@ from lib.logger import app_logger as logger
 from lib.notify import notify
 
 
+CI = os.environ.get("CI")
+GITHUB_NOTIFICATION = os.environ.get("GITHUB_NOTIFICATION")
+
+
 class CheckIn(object):
-    def __init__(self, title: str, cookies: str, ci: Optional[str], extra_headers=None):
+    def __init__(self, title: str, cookies: str, extra_headers=None):
         self.title = title
         self.cookies = cookies
-        self.ci = ci
+        self.ci = CI
         self.member = None
         self.extra_headers = extra_headers
 
@@ -20,11 +26,11 @@ class CheckIn(object):
                  get: Callable[[str], Response],
                  post: Callable[[str, ...], Response],
                  info: Callable,
-                 error: Callable):
+                 error: Callable) -> int:
         error("未重载`_checkin`函数")
-        pass
+        return 255
 
-    def checkin(self, cookie: str):
+    def checkin(self, cookie: str) -> int:
         self.member = "/"
         s = requests.Session()
 
@@ -62,6 +68,7 @@ class CheckIn(object):
     def main(self):
         if not self.cookies:
             return
+        ret = 0
         logger.info(f"----------{self.title}开始签到----------")
         if "\\n" in self.cookies:
             clist = self.cookies.split("\\n")
@@ -71,8 +78,11 @@ class CheckIn(object):
         for i in range(len(clist)):
             logger.info(f"第 {i+1} 个账号开始签到")
             try:
-                self.checkin(clist[i])
+                ret |= self.checkin(clist[i])
             except:
+                ret |= 1
                 logger.error(traceback.format_exc())
                 notify(f"[{self.title}:Exception]", traceback.format_exc())
         logger.info(f"----------{self.title}签到完毕----------")
+        if GITHUB_NOTIFICATION:
+            sys.exit(ret)
