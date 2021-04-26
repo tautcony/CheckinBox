@@ -24,7 +24,7 @@ class SMZDMCheckIn(CheckIn):
         response = json.loads(str(r.content, "utf-8"))
         logger.debug(response)
         if response.get("error_code", 99) != 0:
-            error(response.get("error_msg", "未知错误"), json.dumps(response))
+            error(response.get("error_msg", "未知错误") or "未知错误", json.dumps(response))
         else:
             add_point = response.get("data", {}).get("add_point", 0)
             continue_checkin_days = response.get(
@@ -33,4 +33,6 @@ class SMZDMCheckIn(CheckIn):
 
 
 if __name__ == "__main__":
-    SMZDMCheckIn("SMZDM", COOKIE, CI).main()
+    SMZDMCheckIn("SMZDM", COOKIE, CI, {
+        "Referer": "https://www.smzdm.com/"
+    }).main()

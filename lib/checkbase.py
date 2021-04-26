@@ -9,11 +9,12 @@ from lib.notify import notify
 
 
 class CheckIn(object):
-    def __init__(self, title: str, cookies: str, ci: Optional[str]):
+    def __init__(self, title: str, cookies: str, ci: Optional[str], extra_headers=None):
         self.title = title
         self.cookies = cookies
         self.ci = ci
         self.member = None
+        self.extra_headers = extra_headers
 
     def _checkin(self,
                  get: Callable[[str], Response],
@@ -26,13 +27,22 @@ class CheckIn(object):
     def checkin(self, cookie: str):
         self.member = "/"
         s = requests.Session()
+
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-            "accept-encoding": "gzip, deflate",
-            "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                          "AppleWebKit/537.36 (KHTML, like Gecko) "
+                          "Chrome/90.0.4430.85 "
+                          "Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,"
+                      "image/avif,image/webp,image/apng,*/*;q=0.8,"
+                      "application/signed-exchange;v=b3;q=0.9",
+            "Accept-Encoding": "gzip, deflate",
+            "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
             "Cookie": cookie
         }
+
+        if self.extra_headers:
+            headers.update(self.extra_headers)
 
         def get(url: str, **kwargs): return s.get(url, headers=headers, timeout=120, **kwargs)
         def post(url: str, data=None, **kwargs): return s.post(url, data=data, headers=headers, timeout=120, **kwargs)
