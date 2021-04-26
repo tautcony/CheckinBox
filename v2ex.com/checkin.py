@@ -50,7 +50,8 @@ class V2EXCheckIn(CheckIn):
             info(balance[0] if balance else "请检查`RE_BALANCE`")
         else:
             error("签到失败")
-        return
+            return 1
+        return 0
 
 
 if __name__ == "__main__":

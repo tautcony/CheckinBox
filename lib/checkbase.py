@@ -20,6 +20,7 @@ class CheckIn(object):
         self.cookies = cookies
         self.ci = CI
         self.member = None
+        self.uid = None
         self.extra_headers = extra_headers
 
     def _checkin(self,
@@ -32,6 +33,7 @@ class CheckIn(object):
 
     def checkin(self, cookie: str) -> int:
         self.member = "/"
+        self.uid = None
         s = requests.Session()
 
         headers = {
@@ -76,13 +78,15 @@ class CheckIn(object):
             clist = self.cookies.split("\n")
 
         for i in range(len(clist)):
-            logger.info(f"第 {i+1} 个账号开始签到")
+            if len(clist) > 1:
+                logger.info(f"第{i+1}个账号开始签到")
             try:
-                ret |= self.checkin(clist[i])
+                code = self.checkin(clist[i])
+                ret |= code if code is not None else 0
             except:
                 ret |= 1
                 logger.error(traceback.format_exc())
                 notify(f"[{self.title}:Exception]", traceback.format_exc())
-        logger.info(f"----------{self.title}签到完毕----------")
+        logger.info(f"----------{self.title:8}签到完毕----------")
         if GITHUB_NOTIFICATION:
             sys.exit(ret)
