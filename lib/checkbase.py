@@ -1,7 +1,7 @@
 import os
 import sys
 import traceback
-from typing import Callable
+from typing import Any, Callable
 
 import requests
 from requests import Response
@@ -25,7 +25,7 @@ class CheckIn(object):
 
     def _checkin(self,
                  get: Callable[[str], Response],
-                 post: Callable[[str, ...], Response],
+                 post: Callable[[str, Any], Response],
                  info: Callable,
                  error: Callable) -> int:
         error("未重载`_checkin`函数")
@@ -71,7 +71,7 @@ class CheckIn(object):
         if not self.cookies:
             return
         ret = 0
-        logger.info(f"----------{self.title}开始签到----------")
+        logger.info(f"----------{self.title:8}开始签到----------")
         if "\\n" in self.cookies:
             clist = self.cookies.split("\\n")
         else:

@@ -125,7 +125,7 @@ def tg_notify(title: str, content: str):
     if not (TG_TOKEN and TG_CHATID):
         return 
     api_host = TG_API_HOST if TG_API_HOST else "api.telegram.org"
-    r = requests.post(f"https://{api_host}/bot{TG_TOKEN}/sendMessage", data={
+    r = requests.post(f"https://{api_host}/bot{TG_TOKEN}/sendMessage", json={
         "chat_id": TG_CHATID,
         "text": f"{title}\n{content}"
     })
@@ -141,11 +141,12 @@ def tg_notify(title: str, content: str):
 
 def notify(title: str, *args):
     content = "\n".join([str(i) for i in args])
-    if not content:
-        content = title
-
-    if len(title) > 256:
-        title = title[:256]
+    if len(title) > 128:
+        if not content:
+            content = title
+        else:
+            content = f"{title}\n\n{content}"
+        title = f"{title[:128]}..."
 
     server_notify(title, content)
     push_plus_notify(title, content)
