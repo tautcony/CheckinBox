@@ -48,5 +48,6 @@ jobs:
           COOKIE_SMZDM: ${{ secrets.COOKIE_SMZDM }}
           COOKIE_V2EX: ${{ secrets.COOKIE_V2EX }}
           COOKIE_U2: ${{ secrets.COOKIE_U2 }}
+          COOKIE_TSDM: ${{ secrets.COOKIE_TSDM }}
         run: |
           bash ./checkin.sh
