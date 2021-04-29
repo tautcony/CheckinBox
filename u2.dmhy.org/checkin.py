@@ -58,7 +58,7 @@ class U2CheckIn(CheckIn):
         records = r_soup.find_all("td", {"title": ""}, text="Showup Reward")
         if len(records) > 0:
             uc = records[-1].findNext('td').string
-            info(f"签到奖励: {uc}UC, " + "猜错了" if uc == "1.000" else "猜对了")
+            info(f"签到奖励: {uc}UC, " + ("猜错了" if uc == "1.000" else "猜对了"))
         return 0
 
 

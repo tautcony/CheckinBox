@@ -34,7 +34,8 @@ class TSDMCheckIn(CheckIn):
         r = post(SIGN_URL, data=data)
         if "已经签到" in r.text:
             info("您今日已经签到，请明天再来！")
-
+        else:
+            info(r.text)
 
 if __name__ == "__main__":
     TSDMCheckIn("TSDM", COOKIE).main()
