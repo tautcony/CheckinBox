@@ -43,5 +43,4 @@ class TSDMCheckIn(CheckIn):
             info(r.text)
 
 if __name__ == "__main__":
-    COOKIE = "1"
     TSDMCheckIn("TSDM", COOKIE).main()
