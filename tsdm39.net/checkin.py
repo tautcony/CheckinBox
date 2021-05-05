@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 import os
+import re
 import sys
 from bs4 import BeautifulSoup
 
@@ -14,6 +15,7 @@ COOKIE = os.environ.get("COOKIE_TSDM")
 DAILY_URL = "https://www.tsdm39.net/plugin.php?id=dsu_paulsign:sign"
 SIGN_URL = "https://www.tsdm39.net/plugin.php?id=dsu_paulsign:sign&operation=qiandao&infloat=1&inajax=1"
 
+R_RET = re.compile(r"天使币\s*\d+")
 
 class TSDMCheckIn(CheckIn):
     def _checkin(self, get, post, info, error):
@@ -32,10 +34,14 @@ class TSDMCheckIn(CheckIn):
             "fastreply": "1"
         }
         r = post(SIGN_URL, data=data)
-        if "已经签到" in r.text:
+        if "签到成功" in r.text:
+            ret = R_RET.search(r.text)
+            info("签到成功" + (f"，获取{ret[0]}" if ret else ""))
+        elif "已经签到" in r.text:
             info("您今日已经签到，请明天再来！")
         else:
             info(r.text)
 
 if __name__ == "__main__":
+    COOKIE = "1"
     TSDMCheckIn("TSDM", COOKIE).main()
