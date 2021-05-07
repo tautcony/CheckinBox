@@ -123,7 +123,7 @@ def dd_notify(title: str, content: str, msgtype="text"):
 
 def tg_notify(title: str, content: str):
     if not (TG_TOKEN and TG_CHATID):
-        return 
+        return
     api_host = TG_API_HOST if TG_API_HOST else "api.telegram.org"
     r = requests.post(f"https://{api_host}/bot{TG_TOKEN}/sendMessage", json={
         "chat_id": TG_CHATID,

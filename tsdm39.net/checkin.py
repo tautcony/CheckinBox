@@ -17,6 +17,7 @@ SIGN_URL = "https://www.tsdm39.net/plugin.php?id=dsu_paulsign:sign&operation=qia
 
 R_RET = re.compile(r"天使币\s*\d+")
 
+
 class TSDMCheckIn(CheckIn):
     def _checkin(self, get, post, info, error):
         r = get(DAILY_URL)
@@ -44,6 +45,7 @@ class TSDMCheckIn(CheckIn):
             info("您今日已经签到，请明天再来！")
         else:
             info(r.text)
+
 
 if __name__ == "__main__":
     TSDMCheckIn("TSDM", COOKIE).main()
