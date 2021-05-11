@@ -1,10 +1,12 @@
 import os
+import re
 import sys
 import traceback
 from typing import Any, Callable
 
 import requests
 from requests import Response
+from requests.utils import add_dict_to_cookiejar
 
 from lib.logger import app_logger as logger
 from lib.notify import notify
@@ -24,6 +26,7 @@ class CheckIn(object):
         self.extra_headers = extra_headers
 
     def _checkin(self,
+                 session: requests.Session,
                  get: Callable[[str], Response],
                  post: Callable[[str, Any], Response],
                  info: Callable,
@@ -31,10 +34,19 @@ class CheckIn(object):
         error("未重载`_checkin`函数")
         return 255
 
+    @staticmethod
+    def chunker(seq, size):
+        return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+
     def checkin(self, cookie: str) -> int:
         self.member = "/"
         self.uid = None
         s = requests.Session()
+
+        cookie_dict = {
+            item[0]: item[1] for item in self.chunker([i.strip() for i in re.split(';|=', cookie)], 2)
+        }
+        add_dict_to_cookiejar(s.cookies, cookie_dict)
 
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -45,8 +57,7 @@ class CheckIn(object):
                       "image/avif,image/webp,image/apng,*/*;q=0.8,"
                       "application/signed-exchange;v=b3;q=0.9",
             "Accept-Encoding": "gzip, deflate",
-            "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
-            "Cookie": cookie
+            "Accept-Language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7"
         }
 
         if self.extra_headers:
@@ -68,7 +79,7 @@ class CheckIn(object):
             logger.error(msg)
             notify(msg, *args)
 
-        return self._checkin(get, post, info, error)
+        return self._checkin(s, get, post, info, error)
 
     def main(self):
         if not self.cookies:

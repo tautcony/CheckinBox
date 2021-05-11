@@ -58,7 +58,7 @@ def push_plus_notify(title: str, content: str):
     params = {
         "token": PUSH_PLUS_TOKEN,
         "title": title,
-        "content": content,
+        "content": content or title,
         "template": "html"
     }
     if PUSH_PLUS_TOPIC:

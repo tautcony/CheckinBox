@@ -16,7 +16,7 @@ COOKIE = os.environ.get("COOKIE_SMZDM")
 
 
 class SMZDMCheckIn(CheckIn):
-    def _checkin(self, get, post, info, error):
+    def _checkin(self, session, get, post, info, error):
         t = round(int(time.time() * 1000))
 
         r = get(SIGN_URL.format(t))
