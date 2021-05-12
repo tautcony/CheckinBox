@@ -15,6 +15,8 @@ from lib.notify import notify
 CI = os.environ.get("CI")
 GITHUB_NOTIFICATION = os.environ.get("GITHUB_NOTIFICATION")
 
+RE_COOKIE = re.compile("([^=]+)=\"?(.+?)\"?;\\s*")
+
 
 class CheckIn(object):
     def __init__(self, title: str, cookies: str, extra_headers=None):
@@ -43,9 +45,11 @@ class CheckIn(object):
         self.uid = None
         s = requests.Session()
 
-        cookie_dict = {
-            item[0]: item[1] for item in self.chunker([i.strip() for i in re.split(';|=', cookie)], 2)
-        }
+        cookie_dict = {}
+        match = RE_COOKIE.findall(cookie + ";")
+        for item in match:
+            cookie_dict[item[0]] = item[1]
+
         add_dict_to_cookiejar(s.cookies, cookie_dict)
 
         headers = {
