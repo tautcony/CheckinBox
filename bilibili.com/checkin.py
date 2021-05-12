@@ -12,7 +12,7 @@ COOKIE = os.environ.get("COOKIE_BILIBI")
 BILI_COIN_CNT = os.environ.get("BILI_COIN_CNT", 0)
 BILI_COIN_TYPE = os.environ.get("BILI_COIN_TYPE", "1")
 BILI_SW_WATCH = os.environ.get("BILI_SW_WATCH", "1")
-BILI_SW_SILVER = os.environ.get("BILI_SW_SILVER", None)
+BILI_SW_SILVER = os.environ.get("BILI_SW_SILVER", "")
 
 
 class BilibiliCheckIn(CheckIn):
@@ -54,7 +54,7 @@ class BilibiliCheckIn(CheckIn):
         coin_num = min(coin_num, coin_remain if coin_remain < coin else coin)
 
         if coin_num:
-            if coin_type == 1:
+            if coin_type == "1":
                 following_list = self.get_followings(session=session, uid=uid)
                 for following in following_list.get("data", {}).get("list", []):
                     mid = following.get("mid", [])
@@ -84,7 +84,7 @@ class BilibiliCheckIn(CheckIn):
         title = aid_list[0].get("title")
 
         # 观看视频
-        if BILI_SW_WATCH:
+        if BILI_SW_WATCH == "1":
             report_ret = self.report_task(session=session, bili_jct=bili_jct, aid=aid, cid=cid)
             if report_ret.get("code") == 0:
                 report_msg = f"观看《{title}》300秒"
@@ -101,7 +101,7 @@ class BilibiliCheckIn(CheckIn):
         info(share_msg)
 
         # 银瓜子转换
-        if silver2coin:
+        if silver2coin == "1":
             silver2coin_ret = self.silver2coin(session=session, bili_jct=bili_jct)
             if silver2coin_ret["code"] == 0:
                 silver2coin_msg = "成功将银瓜子兑换为1个硬币"
