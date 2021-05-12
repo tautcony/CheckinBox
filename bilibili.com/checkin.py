@@ -12,11 +12,12 @@ COOKIE = os.environ.get("COOKIE_BILIBI")
 BILI_COIN_CNT = os.environ.get("BILI_COIN_CNT", 0)
 BILI_COIN_TYPE = os.environ.get("BILI_COIN_TYPE", "1")
 BILI_SW_WATCH = os.environ.get("BILI_SW_WATCH", "1")
-BILI_SW_SILVER = os.environ.get("BILI_SW_SILVER", "")
+BILI_SW_SHARE = os.environ.get("BILI_SW_SHARE", "1")
+BILI_SW_SILVER = os.environ.get("BILI_SW_SILVER", "0")
 
 
 class BilibiliCheckIn(CheckIn):
-    def _checkin(self, session, get, post, info, error):
+    def _checkin(self, session, get, post, info, error):  # noqa: C901
         bili_jct = session.cookies.get("bili_jct")
 
         # 投币数量
@@ -24,9 +25,6 @@ class BilibiliCheckIn(CheckIn):
 
         # 投币方式 默认为 1 ；1: 为关注用户列表视频投币 0: 为随机投币。如果关注用户发布的视频不足配置的投币数，则剩余部分使用随机投币
         coin_type = BILI_COIN_TYPE
-
-        # 是否开启银瓜子换硬币，默认为 False 关闭
-        silver2coin = BILI_SW_SILVER
 
         success_count = 0
         uname, uid, is_login, coin, vip_type, current_exp = self.get_nav(session=session)
@@ -55,10 +53,16 @@ class BilibiliCheckIn(CheckIn):
 
         if coin_num:
             if coin_type == "1":
-                following_list = self.get_followings(session=session, uid=uid)
-                for following in following_list.get("data", {}).get("list", []):
-                    mid = following.get("mid", [])
-                    aid_list = mid + self.space_arc_search(session=session, uid=mid)
+                following = self.get_followings(session=session, uid=uid)
+                following_list = following.get("data", {}).get("list", [])
+                random.shuffle(following_list)
+
+                for follow in following_list:
+                    mid = follow.get("mid")
+                    if mid:
+                        aid_list = aid_list + self.space_arc_search(session=session, uid=mid)
+                        if len(aid_list) > 256:
+                            break
 
             # 打乱视频列表
             random.shuffle(aid_list)
@@ -89,19 +93,24 @@ class BilibiliCheckIn(CheckIn):
             if report_ret.get("code") == 0:
                 report_msg = f"观看《{title}》300秒"
             else:
-                report_msg = "观看任务失败"
+                report_msg = f"观看任务失败: {report_ret.get('data')}"
             info(report_msg)
+        else:
+            info("未开启观看")
 
         # 分享视频
-        share_ret = self.share_task(session=session, bili_jct=bili_jct, aid=aid)
-        if share_ret.get("code") == 0:
-            share_msg = f"分享《{title}》成功"
+        if BILI_SW_SHARE == "1":
+            share_ret = self.share_task(session=session, bili_jct=bili_jct, aid=aid)
+            if share_ret.get("code") == 0:
+                share_msg = f"分享《{title}》成功"
+            else:
+                share_msg = f"分享失败: {share_ret.get('data')}"
+            info(share_msg)
         else:
-            share_msg = "分享失败"
-        info(share_msg)
+            info("未开启分享")
 
         # 银瓜子转换
-        if silver2coin == "1":
+        if BILI_SW_SILVER == "1":
             silver2coin_ret = self.silver2coin(session=session, bili_jct=bili_jct)
             if silver2coin_ret["code"] == 0:
                 silver2coin_msg = "成功将银瓜子兑换为1个硬币"
@@ -157,7 +166,7 @@ class BilibiliCheckIn(CheckIn):
             if ret["code"] == 0:
                 msg = f'签到成功，{ret["data"]["text"]}，特别信息:{ret["data"]["specialText"]}，本月已签到{ret["data"]["hadSignDays"]}天'
             elif ret["code"] == 1011040:
-                msg = "今日已签到过,无法重复签到"
+                msg = "直播今日已签到过,无法重复签到"
             else:
                 msg = f'签到失败，信息为: {ret["message"]}'
         except Exception as e:
@@ -176,7 +185,7 @@ class BilibiliCheckIn(CheckIn):
             if ret["code"] == 0:
                 msg = "签到成功"
             elif ret["msg"] == "clockin clockin is duplicate":
-                msg = "今天已经签到过了"
+                msg = "漫画今天已经签到过了"
             else:
                 msg = f'签到失败，信息为({ret["msg"]})'
         except Exception as e:
@@ -305,9 +314,14 @@ class BilibiliCheckIn(CheckIn):
             "cross_domain": "true",
             "csrf": bili_jct,
         }
-        ret = session.post(url=url, data=post_data).json()
-
-        return ret
+        try:
+            return session.post(url=url, data=post_data).json()
+        except Exception as ex:
+            ret = {
+                "code": -1,
+                "message": f"{type(ex).__name__}"
+            }
+            return ret
 
     @staticmethod
     def live_status(session) -> str:
