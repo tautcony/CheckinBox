@@ -87,6 +87,7 @@ class CheckIn(object):
 
     def main(self):
         if not self.cookies:
+            logger.info("未配置Cookie，跳过签到")
             return
         ret = 0
         logger.info(f"----------{self.title:8}开始签到----------")
