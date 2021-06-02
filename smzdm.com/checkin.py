@@ -29,7 +29,7 @@ class SMZDMCheckIn(CheckIn):
             add_point = response.get("data", {}).get("add_point", 0)
             continue_checkin_days = response.get(
                 "data", {}).get("continue_checkin_days", 1)
-            info(f"签到成功，获得积分{add_point}，已连续签到{continue_checkin_days}天")
+            info(f"签到成功，获得积分{add_point}，本周已连续签到{continue_checkin_days}天")
         return 0
 
 
