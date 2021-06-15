@@ -49,5 +49,12 @@ jobs:
           COOKIE_V2EX: ${{ secrets.COOKIE_V2EX }}
           COOKIE_U2: ${{ secrets.COOKIE_U2 }}
           COOKIE_TSDM: ${{ secrets.COOKIE_TSDM }}
+          COOKIE_BILIBI: ${{ secrets.COOKIE_BILIBI }}
+          BILI_COIN_CNT: ${{ secrets.BILI_COIN_CNT }}
+          BILI_COIN_TYPE: ${{ secrets.BILI_COIN_TYPE }}
+          BILI_SW_WATCH: ${{ secrets.BILI_SW_WATCH }}
+          BILI_SW_SHARE: ${{ secrets.BILI_SW_SHARE }}
+          BILI_SW_SILVER: ${{ secrets.BILI_SW_SILVER }}
+
         run: |
           bash ./checkin.sh
