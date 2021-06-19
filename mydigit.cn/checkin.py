@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf8 -*-
 import os
-import re
 import sys
 from bs4 import BeautifulSoup
 
@@ -13,8 +12,7 @@ COOKIE = os.environ.get("COOKIE_MYDIGIT")
 
 
 DAILY_URL = "https://www.mydigit.cn/plugin.php?id=k_misign:sign"
-
-R_RET = re.compile(r"\d+\s*M币")
+CHECKIN_HISTORY_URL = "https://www.mydigit.cn/home.php?mod=spacecp&ac=credit&showcredit=1"
 
 
 class MYDIGITCheckIn(CheckIn):
@@ -37,16 +35,19 @@ class MYDIGITCheckIn(CheckIn):
             "ajaxtarget": "JD_sign",
         }
         r = post(DAILY_URL, data=data)
-        if "今日已签" in r.text:
-            ret = R_RET.search(r.text)
-            if ret:
-                info("今日已签" + (f"，获取{ret[0]}" if ret else ""))
-            else:
-                info(r.text)
+        if "<![CDATA[]]>" in r.text:
+            info("签到成功")
         elif "今日已签" in r.text:
             info("您今日已经签到，请明天再来！")
         else:
-            info(r.text)
+            info("未知报文: {0}".format(r.text))
+            return
+
+        r = get(CHECKIN_HISTORY_URL)
+        soup = BeautifulSoup(r.text, "html.parser")
+        log = soup.select("span.xi1")
+        if len(log) > 0:
+            info("签到奖励：M币 {}".format(log[0].string))
 
 
 if __name__ == "__main__":
