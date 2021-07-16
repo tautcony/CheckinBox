@@ -19,13 +19,18 @@ jobs:
         run: |
           python -m pip install --upgrade pipenv wheel
 
+      - id: python-version
+      - name: Display Python version
+        run: echo "::set-output name=version::$(python3 -c 'import sys; print(sys.version)')"
+
       - id: cache-pipenv
         uses: actions/cache@v2
         with:
           path: ~/.local/share/virtualenvs
-          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
+          key: ${{ runner.os }}-${{ steps.python-version.outputs.version }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
 
       - name: Install dependencies
+        if: steps.cache-pipenv.outputs.cache-hit != 'true'
         run: |
           pipenv install --deploy --dev
 
