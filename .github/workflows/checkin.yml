@@ -1,4 +1,4 @@
-name: 'run'
+name: 'checkin'
 
 on:
   schedule:
@@ -20,9 +20,8 @@ jobs:
           python -m pip install --upgrade pipenv wheel
 
       - id: python-version
-      - name: Display Python version
         run: |
-          echo "::set-output name=version::$(python3 -c 'import sys; print(sys.version)')"
+          echo "::set-output name=version::$(python3 -c 'import platform;print(platform.python_version())')"
 
       - id: cache-pipenv
         uses: actions/cache@v2
