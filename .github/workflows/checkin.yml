@@ -21,7 +21,8 @@ jobs:
 
       - id: python-version
       - name: Display Python version
-        run: echo "::set-output name=version::$(python3 -c 'import sys; print(sys.version)')"
+        run: |
+          echo "::set-output name=version::$(python3 -c 'import sys; print(sys.version)')"
 
       - id: cache-pipenv
         uses: actions/cache@v2
