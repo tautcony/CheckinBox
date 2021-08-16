@@ -68,10 +68,10 @@ class CheckIn(object):
             headers.update(self.extra_headers)
 
         def get(url: str, **kwargs):
-            return s.get(url, headers=headers, timeout=120, **kwargs)
+            return s.get(url, headers=headers, timeout=20, **kwargs)
 
         def post(url: str, data=None, **kwargs):
-            return s.post(url, data=data, headers=headers, timeout=120, **kwargs)
+            return s.post(url, data=data, headers=headers, timeout=20, **kwargs)
 
         prefix = f"[{self.title}]" if self.ci else f"[{self.title}:{self.member}]"
 
