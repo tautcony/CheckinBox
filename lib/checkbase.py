@@ -102,6 +102,9 @@ class CheckIn(object):
             try:
                 code = self.checkin(clist[i])
                 ret |= code if code is not None else 0
+            except requests.exceptions.Timeout as e:
+                ret |= 1
+                notify(f"[{self.title}:Exception]", f"请求超时: {str(e)}")
             except:
                 ret |= 1
                 logger.error(traceback.format_exc())
