@@ -10,7 +10,7 @@ checkin_list=$(find . -type f -name "checkin.py" -not -path "./template/*")
 
 for checkin in ${checkin_list}
 do
-  echo "${checkin} matched, executing..."
+  # echo "${checkin} matched, executing..."
   if ! pipenv run python3 "${checkin}"; then
     ret=1
   fi
