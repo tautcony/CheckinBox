@@ -7,12 +7,15 @@ from typing import Any, Callable
 import requests
 from requests import Response
 from requests.utils import add_dict_to_cookiejar
+from requests.exceptions import ConnectTimeout, Timeout
 
 from lib.logger import app_logger as logger
 from lib.notify import notify
 
 
 CI = os.environ.get("CI")
+GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
+GITHUB_RUN_ID = os.environ.get("GITHUB_RUN_ID")
 GITHUB_NOTIFICATION = os.environ.get("GITHUB_NOTIFICATION")
 
 RE_COOKIE = re.compile("([^=]+)=\"?(.+?)\"?;\\s*")
@@ -35,6 +38,14 @@ class CheckIn(object):
                  error: Callable) -> int:
         error("未重载`_checkin`函数")
         return 255
+
+    def prefix(self):
+        return f"[{self.title}]" if self.ci or not self.member else f"[{self.title}:{self.member}]"
+
+    def notify(self, title: str, *args):
+        msg = f"{self.prefix()} {title}"
+        logger.error(msg)
+        notify(msg, *args, f"ref: https://github.com/{GITHUB_REPOSITORY}/runs/{GITHUB_RUN_ID}")
 
     @staticmethod
     def chunker(seq, size):
@@ -73,21 +84,17 @@ class CheckIn(object):
         def post(url: str, data=None, **kwargs):
             return s.post(url, data=data, headers=headers, timeout=20, **kwargs)
 
-        prefix = f"[{self.title}]" if self.ci else f"[{self.title}:{self.member}]"
-
         def info(message: str):
-            logger.info(f"{prefix} {message}")
+            logger.info(f"{self.prefix()} {message}")
 
         def error(message: str, *args):
-            msg = f"{prefix} {message}"
-            logger.error(msg)
-            notify(msg, *args)
+            self.notify(message, *args)
 
         return self._checkin(s, get, post, info, error)
 
     def main(self):
         if not self.cookies:
-            logger.info("未配置Cookie，跳过签到")
+            logger.info(f"{self.prefix()} 未配置Cookie，跳过签到")
             return
         ret = 0
         logger.info(f"----------{self.title:8}开始签到----------")
@@ -102,13 +109,12 @@ class CheckIn(object):
             try:
                 code = self.checkin(clist[i])
                 ret |= code if code is not None else 0
-            except requests.exceptions.Timeout as e:
+            except (ConnectTimeout, Timeout) as e:
                 ret |= 1
-                notify(f"[{self.title}:Exception]", f"请求超时: {str(e)}")
-            except:
+                self.notify(f"请求超时: {str(e)}")
+            except Exception as e:
                 ret |= 1
-                logger.error(traceback.format_exc())
-                notify(f"[{self.title}:Exception]", traceback.format_exc())
+                self.notify(f"未知异常`{type(e)}': {traceback.format_exc()}")
         logger.info(f"----------{self.title:8}签到完毕----------")
         if GITHUB_NOTIFICATION:
             sys.exit(ret)
