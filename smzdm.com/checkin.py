@@ -8,6 +8,7 @@ import time
 sys.path.append(".")
 from lib.checkbase import CheckIn
 from lib.logger import app_logger as logger
+from lib.notify import notify
 
 
 SIGN_URL = "https://zhiyou.smzdm.com/user/checkin/jsonp_checkin?_={0}"
@@ -29,7 +30,9 @@ class SMZDMCheckIn(CheckIn):
             add_point = response.get("data", {}).get("add_point", 0)
             continue_checkin_days = response.get(
                 "data", {}).get("continue_checkin_days", 1)
-            info(f"签到成功，获得积分{add_point}，本周已连续签到{continue_checkin_days}天")
+            info(f"签到成功，获得积分{add_point}，本周期已连续签到{continue_checkin_days}天")
+            if continue_checkin_days == 3 or continue_checkin_days == 7:
+                notify(f"{self.prefix()} 本周期已连续签到{continue_checkin_days}天，可在APP中领取额外奖励")
         return 0
 
 

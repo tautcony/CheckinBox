@@ -16,6 +16,7 @@ from lib.notify import notify
 CI = os.environ.get("CI")
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
 GITHUB_RUN_ID = os.environ.get("GITHUB_RUN_ID")
+
 GITHUB_NOTIFICATION = os.environ.get("GITHUB_NOTIFICATION")
 
 RE_COOKIE = re.compile("([^=]+)=\"?(.+?)\"?;\\s*")
