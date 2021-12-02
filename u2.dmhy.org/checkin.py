@@ -66,4 +66,4 @@ class U2CheckIn(CheckIn):
 
 
 if __name__ == "__main__":
-    U2CheckIn("U2", COOKIE, cloudscraper=True).main()
+    U2CheckIn("U2", COOKIE).main()

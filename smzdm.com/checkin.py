@@ -24,7 +24,7 @@ class SMZDMCheckIn(CheckIn):
         response = json.loads(str(r.content, "utf-8"))
         logger.debug(response)
         if response.get("error_code", 99) != 0:
-            error(response.get("error_msg", "未知错误") or "未知错误", json.dumps(response))
+            error(response.get("error_msg", None) or f"未知错误[{r.status_code}]", str(r.content, "utf-8"))
             return 1
         else:
             add_point = response.get("data", {}).get("add_point", 0)

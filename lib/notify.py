@@ -129,7 +129,8 @@ def tg_notify(title: str, content: str):
     api_host = TG_API_HOST if TG_API_HOST else "api.telegram.org"
     r = requests.post(f"https://{api_host}/bot{TG_TOKEN}/sendMessage", json={
         "chat_id": TG_CHATID,
-        "text": f"{title}\n{content}"
+        "text": f"{title}\n{content}",
+        "disable_web_page_preview": True,
     })
     logging.debug(r.text)
     obj: dict = r.json()
