@@ -23,12 +23,13 @@ RE_COOKIE = re.compile("([^=]+)=\"?(.+?)\"?;\\s*")
 
 
 class CheckIn(object):
-    def __init__(self, title: str, cookies: str, extra_headers=None):
+    def __init__(self, title: str, cookies: str, cloudscraper=False, extra_headers=None):
         self.title = title
         self.cookies = cookies
         self.ci = CI
         self.member = None
         self.uid = None
+        self.cloudscraper = cloudscraper
         self.extra_headers = extra_headers
 
     def _checkin(self,
@@ -44,9 +45,9 @@ class CheckIn(object):
         return f"[{self.title}]" if self.ci or not self.member else f"[{self.title}:{self.member}]"
 
     def notify(self, title: str, *args):
-        msg = f"{self.prefix()} {title}"
-        logger.error(msg)
-        notify(msg, *args, f"ref: https://github.com/{GITHUB_REPOSITORY}/runs/{GITHUB_RUN_ID}")
+        prefixed_title = f"{self.prefix()} {title}"
+        logger.error(prefixed_title)
+        notify(prefixed_title, *args, f"ref: https://github.com/{GITHUB_REPOSITORY}/actions/runs/{GITHUB_RUN_ID}")
 
     @staticmethod
     def chunker(seq, size):
@@ -55,7 +56,11 @@ class CheckIn(object):
     def checkin(self, cookie: str) -> int:
         self.member = "/"
         self.uid = None
-        s = requests.Session()
+        if self.cloudscraper:
+            from cloudscraper import create_scraper
+            s = create_scraper()
+        else:
+            s = requests.Session()
 
         cookie_dict = {}
         match = RE_COOKIE.findall(cookie + ";")
@@ -115,7 +120,7 @@ class CheckIn(object):
                 self.notify(f"请求超时: {str(e)}")
             except Exception as e:
                 ret |= 1
-                self.notify(f"未知异常`{type(e)}': {traceback.format_exc()}")
+                self.notify(f"未知异常`{type(e)}'", f": {traceback.format_exc()}")
         logger.info(f"----------{self.title:8}签到完毕----------")
         if GITHUB_NOTIFICATION:
             sys.exit(ret)

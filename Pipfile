@@ -9,6 +9,7 @@ rsa = "*"
 beautifulsoup4 = "*"
 cryptography = "*"
 lxml = "*"
+cloudscraper = "*"
 
 [dev-packages]
 flake8 = "*"

@@ -24,6 +24,9 @@ class U2CheckIn(CheckIn):
         if soup.title.string == "Access Point :: U2":
             error("Cookie失效")
             return 1
+        if soup.title.string == "Just a moment...":
+            error("Blocked by Cloudflare")
+            return 1
 
         uid = soup.select("a.NexusMaster_Name")
         if len(uid) > 0:
@@ -63,4 +66,4 @@ class U2CheckIn(CheckIn):
 
 
 if __name__ == "__main__":
-    U2CheckIn("U2", COOKIE).main()
+    U2CheckIn("U2", COOKIE, cloudscraper=True).main()
