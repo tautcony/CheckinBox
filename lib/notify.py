@@ -129,6 +129,7 @@ def tg_notify(title: str, content: str):
     api_host = TG_API_HOST if TG_API_HOST else "api.telegram.org"
     r = requests.post(f"https://{api_host}/bot{TG_TOKEN}/sendMessage", json={
         "chat_id": TG_CHATID,
+        "parse_mode": "MarkdownV2",
         "text": f"*{title}*\n{content}",
         "disable_web_page_preview": True,
     })
@@ -151,8 +152,10 @@ def notify(title: str, *args):
             content = f"{title}\n\n{content}"
         title = f"{title[:128]}..."
 
+    print("::group::send message")
     server_notify(title, content)
     push_plus_notify(title, content)
     cp_notify(title, content)
     dd_notify(title, content)
     tg_notify(title, content)
+    print("::endgroup::")

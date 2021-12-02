@@ -125,7 +125,7 @@ class CheckIn(object):
                 self.notify(f"请求超时: {str(e)}")
             except Exception as e:
                 ret |= 1
-                self.notify(f"未知异常{type(e)}", traceback.format_exc())
+                self.notify(f"未知异常{type(e)}", f"```{traceback.format_exc()}```")
         logger.info(f"----------{self.title:8}签到完毕----------")
         print("::endgroup::")
         if ENABLE_GITHUB_NOTIFICATION:
