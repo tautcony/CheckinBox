@@ -47,6 +47,7 @@ class CheckIn(object):
     def notify(self, title: str, *args):
         prefixed_title = f"{self.prefix()} {title}"
         logger.error(prefixed_title)
+        print(f"::error file={self.title}::{title}")
         notify(prefixed_title, *args, f"ref: https://github.com/{GITHUB_REPOSITORY}/actions/runs/{GITHUB_RUN_ID}")
 
     @staticmethod
@@ -104,6 +105,7 @@ class CheckIn(object):
             return
         ret = 0
         logger.info(f"----------{self.title:8}开始签到----------")
+        print(f"::group::{self.title}")
         if "\\n" in self.cookies:
             clist = self.cookies.split("\\n")
         else:
@@ -122,5 +124,6 @@ class CheckIn(object):
                 ret |= 1
                 self.notify(f"未知异常{type(e)}", traceback.format_exc())
         logger.info(f"----------{self.title:8}签到完毕----------")
+        print("::endgroup::")
         if GITHUB_NOTIFICATION:
             sys.exit(ret)

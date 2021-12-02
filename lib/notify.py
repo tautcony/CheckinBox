@@ -86,7 +86,7 @@ def cp_notify(title: str, content: str):
     logging.debug(r.text)
 
 
-def dd_notify(title: str, content: str, msgtype="text"):
+def dd_notify(title: str, content: str, msgtype="markdown"):
     if not DD_BOT_TOKEN:
         return
     url = f"https://oapi.dingtalk.com/robot/send?access_token={DD_BOT_TOKEN}"
@@ -129,7 +129,7 @@ def tg_notify(title: str, content: str):
     api_host = TG_API_HOST if TG_API_HOST else "api.telegram.org"
     r = requests.post(f"https://{api_host}/bot{TG_TOKEN}/sendMessage", json={
         "chat_id": TG_CHATID,
-        "text": f"{title}\n{content}",
+        "text": f"*{title}*\n{content}",
         "disable_web_page_preview": True,
     })
     logging.debug(r.text)
