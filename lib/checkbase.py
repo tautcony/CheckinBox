@@ -50,7 +50,7 @@ class CheckIn(object):
         prefixed_title = f"{self.prefix()} {title}"
         logger.error(prefixed_title)
         print(f"::warning:: {prefixed_title}")
-        notify(prefixed_title, *args, f"ref: https://github.com/{GITHUB_REPOSITORY}/actions/runs/{GITHUB_RUN_ID}")
+        notify(prefixed_title, *args, f"\nref: https://github.com/{GITHUB_REPOSITORY}/actions/runs/{GITHUB_RUN_ID}")
 
     @staticmethod
     def chunker(seq, size):
