@@ -18,6 +18,7 @@ GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
 GITHUB_RUN_ID = os.environ.get("GITHUB_RUN_ID")
 
 GITHUB_NOTIFICATION = os.environ.get("GITHUB_NOTIFICATION")
+ENABLE_GITHUB_NOTIFICATION = GITHUB_NOTIFICATION and (GITHUB_NOTIFICATION.lower() == "true" or GITHUB_NOTIFICATION.lower() == "1")
 
 RE_COOKIE = re.compile("([^=]+)=\"?(.+?)\"?;\\s*")
 
@@ -47,7 +48,7 @@ class CheckIn(object):
     def notify(self, title: str, *args):
         prefixed_title = f"{self.prefix()} {title}"
         logger.error(prefixed_title)
-        print(f"::error file={self.title}::{title}")
+        print(f"::warning:: {prefixed_title}")
         notify(prefixed_title, *args, f"ref: https://github.com/{GITHUB_REPOSITORY}/actions/runs/{GITHUB_RUN_ID}")
 
     @staticmethod
@@ -100,12 +101,13 @@ class CheckIn(object):
         return self._checkin(s, get, post, info, error)
 
     def main(self):
+        print(f"::group::{self.title}")
         if not self.cookies:
             logger.info(f"{self.prefix()} 未配置Cookie，跳过签到")
+            print("::endgroup::")
             return
         ret = 0
         logger.info(f"----------{self.title:8}开始签到----------")
-        print(f"::group::{self.title}")
         if "\\n" in self.cookies:
             clist = self.cookies.split("\\n")
         else:
@@ -125,5 +127,5 @@ class CheckIn(object):
                 self.notify(f"未知异常{type(e)}", traceback.format_exc())
         logger.info(f"----------{self.title:8}签到完毕----------")
         print("::endgroup::")
-        if GITHUB_NOTIFICATION:
+        if ENABLE_GITHUB_NOTIFICATION:
             sys.exit(ret)

@@ -38,7 +38,7 @@ jobs:
       - name: checkin
         env:
           LOG_LEVEL: INFO
-          GITHUB_NOTIFICATION: 1
+          GITHUB_NOTIFICATION: 0
           SCKEY: ${{ secrets.SCKEY }}
           SCTKEY: ${{ secrets.SCTKEY }}
           CP_KEY: ${{ secrets.CP_KEY }}
