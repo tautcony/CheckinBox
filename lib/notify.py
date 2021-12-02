@@ -157,10 +157,8 @@ def notify(title: str, *args):
             content = f"{title}\n\n{content}"
         title = f"{title[:128]}..."
 
-    print("::group::send message")
     server_notify(title, content)
     push_plus_notify(title, content)
     cp_notify(title, content)
     dd_notify(title, content)
     tg_notify(title, content)
-    print("::endgroup::")
