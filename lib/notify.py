@@ -6,6 +6,7 @@ import base64
 import requests
 import urllib.parse
 import os
+from lib.helper import escape_markdown
 
 
 # 微信server酱通知
@@ -99,7 +100,7 @@ def dd_notify(title: str, content: str, msgtype="markdown"):
         sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))
         url = f"{url}&timestamp={timestamp}&sign={sign}"
     data = {
-        "msgtype": msgtype
+        "msgtype": "markdown" if msgtype == "markdown" else "text",
     }
     if msgtype == "text":
         data["text"] = {
@@ -107,7 +108,7 @@ def dd_notify(title: str, content: str, msgtype="markdown"):
         }
     elif msgtype == "markdown":
         data["markdown"] = {
-            "title": title,
+            "title": escape_markdown(title),
             "text": content
         }
     r = requests.post(url=url, json=data)
@@ -121,16 +122,20 @@ def dd_notify(title: str, content: str, msgtype="markdown"):
         logging.info("钉钉消息发送成功")
 
 
-def tg_notify(title: str, content: str):
+def tg_notify(title: str, content: str, msgtype="markdown"):
     if not (TG_TOKEN and TG_CHATID):
         return
     if len(content) > 4096:
         content = content[:4000] + "..."
     api_host = TG_API_HOST if TG_API_HOST else "api.telegram.org"
+    if msgtype == "markdown":
+        text = f"*{escape_markdown(title)}*\n```{content}```"
+    else:
+        text = f"{title}\n{content}"
     r = requests.post(f"https://{api_host}/bot{TG_TOKEN}/sendMessage", json={
         "chat_id": TG_CHATID,
-        "parse_mode": "MarkdownV2",
-        "text": f"*{title}*\n{content}",
+        "parse_mode": "MarkdownV2" if msgtype == "markdown" else None,
+        "text": text,
         "disable_web_page_preview": True,
     })
     logging.debug(r.text)
