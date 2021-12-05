@@ -160,5 +160,5 @@ def notify(title: str, *args):
     server_notify(title, content)
     push_plus_notify(title, content)
     cp_notify(title, content)
-    dd_notify(title, content)
-    tg_notify(title, content)
+    dd_notify(title, content, msgtype="text")
+    tg_notify(title, content, msgtype="text")

@@ -25,7 +25,7 @@ RE_COOKIE = re.compile("([^=]+)=\"?(.+?)\"?;\\s*")
 
 
 class CheckIn(object):
-    def __init__(self, title: str, cookies: str, cloudscraper=False, extra_headers=None):
+    def __init__(self, title: str, cookies: str, extra_headers=None, cloudscraper=False):
         self.title = title
         self.cookies = cookies
         self.ci = CI
@@ -98,6 +98,9 @@ class CheckIn(object):
 
         def error(message: str, *args):
             self.notify(message, *args)
+
+        print(headers)
+        print(self.extra_headers)
 
         return self._checkin(s, get, post, info, error)
 
