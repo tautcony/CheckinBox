@@ -2,11 +2,11 @@
 # -*- coding: utf8 -*-
 import os
 import sys
-from genshin import Sign
-from lib.notify import notify
-
 sys.path.append(".")
+
+from lib.notify import notify
 from lib.checkbase import CheckIn
+from genshin import Sign
 
 
 COOKIE = os.environ.get("COOKIE_GENSHIN")

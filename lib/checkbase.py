@@ -100,9 +100,6 @@ class CheckIn(object):
         def error(message: str, *args):
             self.notify(message, *args)
 
-        print(headers)
-        print(self.extra_headers)
-
         return self._checkin(s, get, post, info, error, cookie)
 
     def main(self):
