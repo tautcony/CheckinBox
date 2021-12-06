@@ -73,6 +73,7 @@ class Roles(Base):
 class Sign(Base):
     def __init__(self, session: Session, cookie: str, info, error):
         super(Sign, self).__init__(session, cookie, info, error)
+        self._roles = Roles(self.session, self._cookie, self.info, self.error)
         self._region_list = []
         self._region_name_list = []
         self._uid_list = []
@@ -102,7 +103,7 @@ class Sign(Base):
         return header
 
     def get_info(self):
-        user_game_roles = Roles(self.session, self._cookie, self.info, self.error).get_roles()
+        user_game_roles = self._roles.get_roles()
         role_list = user_game_roles.get('data', {}).get('list', [])
 
         # role list empty
@@ -138,7 +139,7 @@ class Sign(Base):
         for i in range(len(info_list)):
             today = info_list[i]['data']['today']
             total_sign_day = info_list[i]['data']['total_sign_day']
-            awards = Roles(self.session, self._cookie, self.info, self.error).get_awards()['data']['awards']
+            awards = self._roles.get_awards()['data']['awards']
             uid = str(self._uid_list[i]).replace(
                 str(self._uid_list[i])[1:8], '******', 1)
 

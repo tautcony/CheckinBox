@@ -15,7 +15,8 @@ COOKIE = os.environ.get("COOKIE_GENSHIN")
 class GenshinCheckIn(CheckIn):
     def _checkin(self, session, get, post, info, error, cookie=None):
         message = Sign(session, cookie, info, error).run()
-        notify("米游社签到完成", message)
+        if "已经签到" not in message:
+            notify("米游社签到完成", message)
 
 
 if __name__ == "__main__":
