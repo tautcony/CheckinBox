@@ -11,7 +11,7 @@ COOKIE = os.environ.get("COOKIE_TEMPLATE")
 
 
 class SampleCheckIn(CheckIn):
-    def _checkin(self, get, post, info, error):
+    def _checkin(self, session, get, post, info, error, cookie=None):
         return 0
 
 

@@ -16,7 +16,7 @@ CHECKIN_HISTORY_URL = "https://www.mydigit.cn/home.php?mod=spacecp&ac=credit&sho
 
 
 class MYDIGITCheckIn(CheckIn):
-    def _checkin(self, session, get, post, info, error):
+    def _checkin(self, session, get, post, info, error, cookie=None):
         r = get(DAILY_URL)
         if "需要先登录" in r.text:
             error("Cookie失效")

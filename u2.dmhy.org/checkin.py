@@ -16,7 +16,7 @@ COOKIE = os.environ.get("COOKIE_U2")
 
 
 class U2CheckIn(CheckIn):
-    def _checkin(self, session, get, post, info, error):
+    def _checkin(self, session, get, post, info, error, cookie=None):
         # 签到
         r = get("https://u2.dmhy.org/showup.php")
         soup = BeautifulSoup(r.text, "html.parser")

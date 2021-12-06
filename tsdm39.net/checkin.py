@@ -19,7 +19,7 @@ R_RET = re.compile(r"天使币\s*\d+")
 
 
 class TSDMCheckIn(CheckIn):
-    def _checkin(self, session, get, post, info, error):
+    def _checkin(self, session, get, post, info, error, cookie=None):
         r = get(DAILY_URL)
         if "需要先登录" in r.text:
             error("Cookie失效")

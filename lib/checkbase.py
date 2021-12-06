@@ -39,7 +39,8 @@ class CheckIn(object):
                  get: Callable[[str], Response],
                  post: Callable[[str, Any], Response],
                  info: Callable,
-                 error: Callable) -> int:
+                 error: Callable,
+                 cookie: str = None) -> int:
         error("未重载`_checkin`函数")
         return 255
 
@@ -102,7 +103,7 @@ class CheckIn(object):
         print(headers)
         print(self.extra_headers)
 
-        return self._checkin(s, get, post, info, error)
+        return self._checkin(s, get, post, info, error, cookie)
 
     def main(self):
         print(f"::group::{self.title}")
@@ -129,6 +130,8 @@ class CheckIn(object):
             except Exception as e:
                 ret |= 1
                 self.notify(f"未知异常{type(e)}", traceback.format_exc())
+                if not self.ci:
+                    traceback.print_exc()
         logger.info(f"----------{self.title:8}签到完毕----------")
         print("::endgroup::")
         if ENABLE_GITHUB_NOTIFICATION:

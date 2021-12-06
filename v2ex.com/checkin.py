@@ -19,7 +19,7 @@ COOKIE = os.environ.get("COOKIE_V2EX")
 
 
 class V2EXCheckIn(CheckIn):
-    def _checkin(self, session, get, post, info, error):
+    def _checkin(self, session, get, post, info, error, cookie=None):
         # 获取 once
         r = get(DAILY_URL)
         result = RE_USER.search(r.text)
