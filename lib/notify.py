@@ -132,12 +132,14 @@ def tg_notify(title: str, content: str, msgtype="markdown"):
         text = f"*{escape_markdown(title)}*\n```{content}```"
     else:
         text = f"{title}\n{content}"
-    r = requests.post(f"https://{api_host}/bot{TG_TOKEN}/sendMessage", json={
+    payload = {
         "chat_id": TG_CHATID,
-        "parse_mode": "MarkdownV2" if msgtype == "markdown" else None,
         "text": text,
         "disable_web_page_preview": True,
-    })
+    }
+    if msgtype == "markdown":
+        payload["parse_mode"] = "MarkdownV2"
+    r = requests.post(f"https://{api_host}/bot{TG_TOKEN}/sendMessage", json=payload)
     logging.debug(r.text)
     obj: dict = r.json()
     if not obj.get("ok", False):
