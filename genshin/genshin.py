@@ -49,7 +49,7 @@ class Roles(Base):
     def get_awards(self):
         response = {}
         try:
-            response = self.session.get(CONFIG.AWARD_URL, headers=self.get_header()).json()
+            response = self.session.get(CONFIG.AWARD_URL, headers=self.get_header(), timeout=20).json()
         except json.JSONDecodeError as e:
             raise Exception(e)
 
@@ -59,7 +59,7 @@ class Roles(Base):
         self.info('准备获取账号信息...')
         response = {}
         try:
-            response = self.session.get(CONFIG.ROLE_URL, headers=self.get_header()).json()
+            response = self.session.get(CONFIG.ROLE_URL, headers=self.get_header(), timeout=20).json()
             message = response['message']
         except Exception as e:
             raise Exception(e)
@@ -123,7 +123,7 @@ class Sign(Base):
             info_url = CONFIG.INFO_URL.format(
                 self._region_list[i], CONFIG.ACT_ID, self._uid_list[i])
             try:
-                content = self.session.get(info_url, headers=self.get_header()).json()
+                content = self.session.get(info_url, headers=self.get_header(), timeout=20).json()
                 info_list.append(content)
             except Exception as e:
                 raise Exception(e)
@@ -174,7 +174,7 @@ class Sign(Base):
 
             try:
                 response = self.session.post(CONFIG.SIGN_URL, headers=self.get_header(),
-                                             data=json.dumps(data, ensure_ascii=False)).json()
+                                             data=json.dumps(data, ensure_ascii=False), timeout=20).json()
             except Exception as e:
                 self.error(e)
                 raise
