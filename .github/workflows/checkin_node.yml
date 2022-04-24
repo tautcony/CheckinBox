@@ -1,0 +1,54 @@
+name: 'checkin_node'
+
+on:
+  schedule:
+    - cron: '20 14 * * *'
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - id: env-version
+        run: |
+          echo "::set-output name=ubuntu::$(lsb_release -cs)"
+
+      - id: cache-nodejs
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ steps.env-version.outputs.ubuntu }}-node-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-nodejs.outputs.cache-hit != 'true'
+        run: |
+          npm install
+
+      - name: checkin
+        env:
+          LOG_LEVEL: INFO
+          GITHUB_NOTIFICATION: 0
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          SCKEY: ${{ secrets.SCKEY }}
+          SCTKEY: ${{ secrets.SCTKEY }}
+          CP_KEY: ${{ secrets.CP_KEY }}
+          CP_MODE: ${{ secrets.CP_MODE }}
+          PUSH_PLUS_TOKEN: ${{ secrets.PUSH_PLUS_TOKEN }}
+          PUSH_PLUS_TOPIC: ${{ secrets.PUSH_PLUS_TOPIC }}
+          DD_BOT_TOKEN: ${{ secrets.DD_BOT_TOKEN }}
+          DD_BOT_SECRET: ${{ secrets.DD_BOT_SECRET }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHATID: ${{ secrets.TG_CHATID }}
+          TG_API_HOST: ${{ secrets.TG_API_HOST }}
+          BMW_ACCESS_TOKEN: ${{ secrets.BMW_ACCESS_TOKEN }}
+          BMW_REFRESH_TOKEN: ${{ secrets.BMW_REFRESH_TOKEN }}
+
+        run: |
+          node mybmw/checkin.js
