@@ -100,6 +100,8 @@ class GithubSecret {
      * @returns {Promise<string>} 密文
      */
     async secret_encrypt(value, key) {
+        console.log(typeof value, typeof key);
+
         const keyBytes = Buffer.from(key, 'base64');
         const messageBytes = Buffer.from(value);
     
@@ -250,10 +252,10 @@ class myBMWClient {
             if (await this.init_token(undefined, undefined)) {
                 const github = new GithubSecret();
                 const key_info = await github.get_public_key();
-                const access_token_encrypted = await github.secret_encrypt(this.access_token, key_info.key);
-                const refresh_token_encrypted = await github.secret_encrypt(this.refresh_token, key_info.key);
-                await github.write_secret('BMW_ACCESS_TOKEN', access_token_encrypted, key_info.key_id);
-                await github.write_secret('BMW_REFRESH_TOKEN', refresh_token_encrypted, key_info.key_id);
+                const access_token_encrypted = await github.secret_encrypt(this.access_token, key_info.data.key);
+                const refresh_token_encrypted = await github.secret_encrypt(this.refresh_token, key_info.data.key);
+                await github.write_secret('BMW_ACCESS_TOKEN', access_token_encrypted, key_info.data.key_id);
+                await github.write_secret('BMW_REFRESH_TOKEN', refresh_token_encrypted, key_info.data.key_id);
             }
         } else {
             const __dirname = dirname(fileURLToPath(import.meta.url));
