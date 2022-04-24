@@ -190,3 +190,5 @@ offline_pack/
 *.msi
 config.json
 flake-report/
+node_modules/
+token.json
