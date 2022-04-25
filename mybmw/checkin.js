@@ -38,7 +38,7 @@ const fetch = axios.create({
 fetch.interceptors.response.use(function (response) {
     const data = response.data || {};
     if (data.code < 200 || data.code > 299) {
-        console.warn(`请求接口 "${response.request.path}" 失败:`, response.data);
+        console.warn(`请求接口 "${response.request.path}" 异常:`, response.data);
     }
     return data;
 }, function (error) {
@@ -224,7 +224,7 @@ class myBMWClient {
 
     /**
      * 使用refresh_token刷新token
-     * @returns {Promise<{data: {access_token: string, refresh_token: string, token_type: string}, code: number, error: boolean}>}
+     * @returns {Promise<{access_token: string, refresh_token: string, token_type: string}>}
      */
     async refresh_access_token() {
         const payload = {
@@ -232,9 +232,9 @@ class myBMWClient {
             'refresh_token': this.refresh_token
         }
         const resp = await fetch.post(`${BMW_SERVER_HOST}${API_REFRESH_TOKEN}`, new url.URLSearchParams(payload).toString());
-        this.access_token = resp.data.access_token;
-        this.refresh_token = resp.data.refresh_token;
-        this.token_type = resp.data.token_type;
+        this.access_token = resp.access_token;
+        this.refresh_token = resp.refresh_token;
+        this.token_type = resp.token_type;
         return resp;
     }
 
