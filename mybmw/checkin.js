@@ -42,10 +42,15 @@ fetch.interceptors.response.use(function (response) {
     }
     return data;
 }, function (error) {
-    console.log(`请求接口 "${error.request.path}" 失败: ${error.message}`);
+    if (error.request) {
+        console.log(`请求接口 "${error.request.path}" 失败: ${error.message}`);
+    } else {
+        console.log(`请求接口失败: `, error);
+    }
+
     return {
         data: {
-            code: error.response.status,
+            code: (error.response || {}).status,
             error: true,
             message: error.message
         }
