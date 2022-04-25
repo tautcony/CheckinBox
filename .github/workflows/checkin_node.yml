@@ -2,7 +2,7 @@ name: 'checkin_node'
 
 on:
   schedule:
-    - cron: '20 14 * * *'
+    - cron: '20 2 * * *'
   workflow_dispatch:
 
 jobs:
@@ -27,7 +27,6 @@ jobs:
           key: ${{ steps.env-version.outputs.ubuntu }}-node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install dependencies
-        if: steps.cache-nodejs.outputs.cache-hit != 'true'
         run: |
           npm install
 

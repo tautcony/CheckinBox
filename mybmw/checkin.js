@@ -10,7 +10,7 @@ import libsodium from "libsodium-wrappers";
 import { Octokit } from "@octokit/rest";
 
 
-const MYBMW_VERSION = 'bmw;2.3.0(13603)';
+const MYBMW_VERSION = '2.3.0(13603)';
 const BMW_SERVER_HOST = 'https://myprofile.bmw.com.cn';
 
 const API_PUBLIC_KEY = '/eadrax-coas/v1/cop/publickey';
@@ -25,9 +25,10 @@ const API_JOY_LIST = '/cis/eadrax-membership/api/v2/joy-list';
 
 const fetch = axios.create({
     timeout: 5000,
+    baseURL: BMW_SERVER_HOST,
     headers: {
         'User-Agent': 'Dart/2.10 (dart:io)',
-        'x-user-agent': `ios(15.4.1);${MYBMW_VERSION}`,
+        'x-user-agent': `ios(15.4.1);bmw;${MYBMW_VERSION}`,
         'Accept-Language': 'zh-CN',
         'host': 'myprofile.bmw.com.cn',
         'content-type': 'application/json; charset=utf-8'
@@ -36,7 +37,7 @@ const fetch = axios.create({
 
 fetch.interceptors.response.use(function (response) {
     const data = response.data || {};
-    if (data.code !== 200 && data.code !== 299) {
+    if (data.code < 200 || data.code > 299) {
         console.warn(`请求接口 "${response.request.path}" 失败:`, response.data);
     }
     return data;
