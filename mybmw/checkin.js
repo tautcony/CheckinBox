@@ -2,36 +2,36 @@ import axios from "axios";
 import crypto from "crypto";
 import url from "url";
 import fs from "fs";
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { dirname } from "path";
+import { fileURLToPath } from "url";
 import readline from "readline";
 
 import libsodium from "libsodium-wrappers";
 import { Octokit } from "@octokit/rest";
 
 
-const MYBMW_VERSION = '2.3.0(13603)';
-const BMW_SERVER_HOST = 'https://myprofile.bmw.com.cn';
+const MYBMW_VERSION = "2.3.0(13603)";
+const BMW_SERVER_HOST = "https://myprofile.bmw.com.cn";
 
-const API_PUBLIC_KEY = '/eadrax-coas/v1/cop/publickey';
-const API_LOGIN = '/eadrax-coas/v1/login/pwd';
-const API_REFRESH_TOKEN = '/eadrax-coas/v1/oauth/token';
-const API_CHECK_IN = '/cis/eadrax-community/private-api/v1/mine/check-in';
-const API_ARTICLE_LIST = '/cis/eadrax-ocommunity/public-api/v1/article-list';
-const API_SHARE_ARTICLE = '/cis/eadrax-oarticle/open/article/api/v2/share-article';
-const API_JOY_INFO = '/cis/eadrax-membership/api/v1/joy-info';
-const API_JOY_LIST = '/cis/eadrax-membership/api/v2/joy-list';
+const API_PUBLIC_KEY = "/eadrax-coas/v1/cop/publickey";
+const API_LOGIN = "/eadrax-coas/v1/login/pwd";
+const API_REFRESH_TOKEN = "/eadrax-coas/v1/oauth/token";
+const API_CHECK_IN = "/cis/eadrax-community/private-api/v1/mine/check-in";
+const API_ARTICLE_LIST = "/cis/eadrax-ocommunity/public-api/v1/article-list";
+const API_SHARE_ARTICLE = "/cis/eadrax-oarticle/open/article/api/v2/share-article";
+const API_JOY_INFO = "/cis/eadrax-membership/api/v1/joy-info";
+const API_JOY_LIST = "/cis/eadrax-membership/api/v2/joy-list";
 
 
 const fetch = axios.create({
     timeout: 5000,
     baseURL: BMW_SERVER_HOST,
     headers: {
-        'User-Agent': 'Dart/2.10 (dart:io)',
-        'x-user-agent': `ios(15.4.1);bmw;${MYBMW_VERSION}`,
-        'Accept-Language': 'zh-CN',
-        'host': 'myprofile.bmw.com.cn',
-        'content-type': 'application/json; charset=utf-8'
+        "User-Agent": "Dart/2.10 (dart:io)",
+        "x-user-agent": `ios(15.4.1);bmw;${MYBMW_VERSION}`,
+        "Accept-Language": "zh-CN",
+        "host": "myprofile.bmw.com.cn",
+        "content-type": "application/json; charset=utf-8"
     }
 });
 
@@ -72,8 +72,20 @@ function rsa_encrypt(text, publicKey) {
         },
         Buffer.from(text)
     );
-    return encryptedData.toString('base64');
+    return encryptedData.toString("base64");
 }
+
+/**
+ * 生成随机数，[min, max)
+ * @param {number} min 最小值
+ * @param {number} max 最大值
+ * @returns 随机数
+ */
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min) + min);
+  }
 
 class GithubSecret {
     owner;
@@ -93,7 +105,7 @@ class GithubSecret {
      * @returns {Promise<{key_id: string, key: string}>} 公钥
      */
     async get_public_key() {
-        return this.octokit.request('GET /repos/{owner}/{repo}/actions/secrets/public-key', {
+        return this.octokit.request("GET /repos/{owner}/{repo}/actions/secrets/public-key", {
             owner: this.owner,
             repo: this.repo
         });
@@ -106,14 +118,13 @@ class GithubSecret {
      * @returns {Promise<string>} 密文
      */
     async secret_encrypt(value, key) {
-        console.log(typeof value, typeof key);
 
-        const keyBytes = Buffer.from(key, 'base64');
+        const keyBytes = Buffer.from(key, "base64");
         const messageBytes = Buffer.from(value);
     
         await libsodium.ready;
         const encryptedBytes = libsodium.crypto_box_seal(messageBytes, keyBytes);
-        const encrypted = Buffer.from(encryptedBytes).toString('base64');
+        const encrypted = Buffer.from(encryptedBytes).toString("base64");
     
         return encrypted;
     }
@@ -126,7 +137,7 @@ class GithubSecret {
      * @returns 
      */
     async write_secret(secret_name, value, key_id) {
-        return this.octokit.request('PUT /repos/{owner}/{repo}/actions/secrets/{secret_name}', {
+        return this.octokit.request("PUT /repos/{owner}/{repo}/actions/secrets/{secret_name}", {
             owner: this.owner,
             repo: this.repo,
             secret_name,
@@ -148,7 +159,7 @@ async function fetch_userinfo() {
     });
     // eslint-disable-next-line no-unused-vars
     return new Promise((resolve, reject) => {
-        cio.question('username: ', username => {
+        cio.question("username: ", username => {
             // eslint-disable-next-line no-unused-vars
             cio.input.on("keypress", function (c, k) {
                 const len = cio.line.length;
@@ -158,7 +169,7 @@ async function fetch_userinfo() {
                   cio.output.write("*");
                 }
             });
-            cio.question('password: ', password => {
+            cio.question("password: ", password => {
                 cio.close();
                 resolve({
                     username,
@@ -196,14 +207,14 @@ class myBMWClient {
      */
     async get_token(mobile, password) {
         if (!mobile || !password) {
-            throw new Error('mobile or password is empty');
+            throw new Error("mobile or password is empty");
         }
         const rsa_resp = await this.get_public_key();
         const public_key = rsa_resp.data.value;
         const encrypt_password = rsa_encrypt(password, public_key);
         const payload = {
-            'mobile': mobile,
-            'password': encrypt_password,
+            "mobile": mobile,
+            "password": encrypt_password,
         }
         const resp = await fetch.post(`${BMW_SERVER_HOST}${API_LOGIN}`, payload);
         this.access_token = resp.data.access_token;
@@ -222,7 +233,7 @@ class myBMWClient {
         if (!token) {
             return true;
         }
-        const payload = Buffer.from(token.split('.')[1], 'base64').toString('utf8');
+        const payload = Buffer.from(token.split(".")[1], "base64").toString("utf8");
         const expiry = JSON.parse(payload).exp;
         return (Math.floor((new Date).getTime() / 1000)) >= expiry;
     }
@@ -233,8 +244,8 @@ class myBMWClient {
      */
     async refresh_access_token() {
         const payload = {
-            'grant_type': 'refresh_token',
-            'refresh_token': this.refresh_token
+            "grant_type": "refresh_token",
+            "refresh_token": this.refresh_token
         }
         const resp = await fetch.post(`${BMW_SERVER_HOST}${API_REFRESH_TOKEN}`, new url.URLSearchParams(payload).toString());
         this.access_token = resp.access_token;
@@ -249,42 +260,42 @@ class myBMWClient {
      */
     async load_token(is_github_action) {
         if (is_github_action) {
-            this.access_token = process.env['BMW_ACCESS_TOKEN'];
-            this.refresh_token = process.env['BMW_REFRESH_TOKEN'];
+            this.access_token = process.env["BMW_ACCESS_TOKEN"];
+            this.refresh_token = process.env["BMW_REFRESH_TOKEN"];
             if (!this.access_token || !this.refresh_token) {
                 console.log("BMW_ACCESS_TOKEN or BMW_REFRESH_TOKEN is empty, please check your environment variables");
-                throw new Error('github action require access_token to work');
+                throw new Error("github action require access_token to work");
             }
             if (await this.init_token(undefined, undefined)) {
                 const github = new GithubSecret();
                 const key_info = await github.get_public_key();
                 const access_token_encrypted = await github.secret_encrypt(this.access_token, key_info.data.key);
                 const refresh_token_encrypted = await github.secret_encrypt(this.refresh_token, key_info.data.key);
-                await github.write_secret('BMW_ACCESS_TOKEN', access_token_encrypted, key_info.data.key_id);
-                await github.write_secret('BMW_REFRESH_TOKEN', refresh_token_encrypted, key_info.data.key_id);
+                await github.write_secret("BMW_ACCESS_TOKEN", access_token_encrypted, key_info.data.key_id);
+                await github.write_secret("BMW_REFRESH_TOKEN", refresh_token_encrypted, key_info.data.key_id);
             }
         } else {
             const __dirname = dirname(fileURLToPath(import.meta.url));
             let username = undefined;
             let password = undefined;
-            if (!fs.existsSync(__dirname + '/token.json')) {
+            if (!fs.existsSync(__dirname + "/token.json")) {
                 const ret = await fetch_userinfo();
                 username = ret.username;
                 password = ret.password;
             } else {
-                const storage = JSON.parse(fs.readFileSync(__dirname + '/token.json'));
-                this.access_token = storage['BMW_ACCESS_TOKEN'];
-                this.refresh_token = storage['BMW_REFRESH_TOKEN'];
+                const storage = JSON.parse(fs.readFileSync(__dirname + "/token.json"));
+                this.access_token = storage["BMW_ACCESS_TOKEN"];
+                this.refresh_token = storage["BMW_REFRESH_TOKEN"];
             }
             if (await this.init_token(username, password)) {
-                fs.writeFileSync(__dirname + '/token.json', JSON.stringify({
-                    'BMW_ACCESS_TOKEN': this.access_token,
-                    'BMW_REFRESH_TOKEN': this.refresh_token
+                fs.writeFileSync(__dirname + "/token.json", JSON.stringify({
+                    "BMW_ACCESS_TOKEN": this.access_token,
+                    "BMW_REFRESH_TOKEN": this.refresh_token
                 }, undefined, 4));
             }
         }
         if (!this.access_token) {
-            throw new Error('access_token is empty');
+            throw new Error("access_token is empty");
         }
     }
 
@@ -310,7 +321,7 @@ class myBMWClient {
 
         if (this.access_token) {
             console.log("init token success");
-            fetch.defaults.headers.common['Authorization'] = `Bearer ${this.access_token}`;
+            fetch.defaults.headers.common["Authorization"] = `Bearer ${this.access_token}`;
             return true;
         }
         console.log("init token failed");
@@ -342,7 +353,7 @@ class myBMWClient {
         const payload = {
             pageNum: 1,
             pageSize: 10,
-            boardCode: '0'
+            boardCode: "0"
         }
         return fetch.post(`${BMW_SERVER_HOST}${API_ARTICLE_LIST}`, payload);
     }
@@ -375,10 +386,11 @@ class myBMWClient {
             console.warn("没有可供分享的文章，跳过分享");
             return;
         }
-        const article_id = articles[0].articleId;
-        const article_title = articles[0].articleTitle;
+        const aritcleIndex = getRandomInt(0, articles.length);
+        const article_id = articles[aritcleIndex].articleId;
+        const article_title = articles[aritcleIndex].articleTitle;
         const payload = {
-            'articleId': article_id
+            "articleId": article_id
         };
         const resp = await fetch.post(`${BMW_SERVER_HOST}${API_SHARE_ARTICLE}`, payload);
         if (resp.code === 200 && resp.success === true) {
@@ -414,10 +426,10 @@ class myBMWClient {
 }
 
 async function main() {
-    const is_github_action = process.env['GITHUB_ACTIONS'] === 'true';
+    const is_github_action = process.env["GITHUB_ACTIONS"] === "true";
     if (is_github_action) {
-        const access_token = process.env['BMW_ACCESS_TOKEN'];
-        const refresh_token = process.env['BMW_REFRESH_TOKEN'];
+        const access_token = process.env["BMW_ACCESS_TOKEN"];
+        const refresh_token = process.env["BMW_REFRESH_TOKEN"];
         if (!access_token || !refresh_token) {
             console.log("not enabled");
             return;
