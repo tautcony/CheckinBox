@@ -8,13 +8,17 @@ import readline from "readline";
 
 import libsodium from "libsodium-wrappers";
 import { Octokit } from "@octokit/rest";
+import { exit } from "process";
 
 
 const MYBMW_VERSION = "2.3.0(13603)";
 const BMW_SERVER_HOST = "https://myprofile.bmw.com.cn";
 
 const API_PUBLIC_KEY = "/eadrax-coas/v1/cop/publickey";
+const API_CAPTCHA_CHECK = "/eadrax-coas/v1/cop/_MOBILE_/is-captcha-needed";
+const API_SEND_SMS = "/eadrax-coas/v1/cop/message";
 const API_LOGIN = "/eadrax-coas/v1/login/pwd";
+const API_SMS_LOGIN = "/eadrax-coas/v1/login/sms";
 const API_REFRESH_TOKEN = "/eadrax-coas/v1/oauth/token";
 const API_CHECK_IN = "/cis/eadrax-community/private-api/v1/mine/check-in";
 const API_ARTICLE_LIST = "/cis/eadrax-ocommunity/public-api/v1/article-list";
@@ -23,15 +27,16 @@ const API_JOY_INFO = "/cis/eadrax-membership/api/v1/joy-info";
 const API_JOY_LIST = "/cis/eadrax-membership/api/v2/joy-list";
 
 
+axios.defaults.withCredentials = true;
+
 const fetch = axios.create({
     timeout: 5000,
     baseURL: BMW_SERVER_HOST,
     headers: {
-        "User-Agent": "Dart/2.10 (dart:io)",
         "x-user-agent": `ios(15.4.1);bmw;${MYBMW_VERSION}`,
         "Accept-Language": "zh-CN",
-        "host": "myprofile.bmw.com.cn",
-        "content-type": "application/json; charset=utf-8"
+        "Host": "myprofile.bmw.com.cn",
+        "Content-Type": "application/json; charset=utf-8"
     }
 });
 
@@ -43,7 +48,12 @@ fetch.interceptors.response.use(function (response) {
     return data;
 }, function (error) {
     if (error.request) {
+        if (error.response.status === 401) {
+            console.warn("token失效，请重新登录");
+            exit(1);
+        }
         console.log(`请求接口 "${error.request.path}" 失败: ${error.message}`);
+        console.log("resp", error.response);
     } else {
         console.log(`请求接口失败: `, error);
     }
@@ -85,7 +95,7 @@ function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min) + min);
-  }
+}
 
 class GithubSecret {
     owner;
@@ -150,7 +160,7 @@ class GithubSecret {
 
 /**
  * 获取用户名与密码
- * @returns {Promise<{username: string, password: string}>}
+ * @returns {Promise<{username: string}>}
  */
 async function fetch_userinfo() {
     const cio = readline.createInterface({
@@ -160,22 +170,24 @@ async function fetch_userinfo() {
     // eslint-disable-next-line no-unused-vars
     return new Promise((resolve, reject) => {
         cio.question("username: ", username => {
-            // eslint-disable-next-line no-unused-vars
-            cio.input.on("keypress", function (c, k) {
-                const len = cio.line.length;
-                readline.moveCursor(cio.output, -len, 0);
-                readline.clearLine(cio.output, 1);
-                for (let i = 0; i < len; i++) {
-                  cio.output.write("*");
-                }
-            });
-            cio.question("password: ", password => {
-                cio.close();
-                resolve({
-                    username,
-                    password
-                });
-            });
+            resolve({ username });
+        });
+    });
+}
+
+/**
+ * 获取验证码
+ * @returns {Promise<string>}
+ */
+ async function fetch_sms_code() {
+    const cio = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    // eslint-disable-next-line no-unused-vars
+    return new Promise((resolve, reject) => {
+        cio.question("sms code: ", sms_code => {
+            resolve(sms_code);
         });
     });
 }
@@ -199,24 +211,38 @@ class myBMWClient {
         return fetch.get(`${BMW_SERVER_HOST}${API_PUBLIC_KEY}`);
     }
     
+
+    async send_sms(mobile) {
+        if (!mobile) {
+            throw new Error("mobile is empty");
+        }
+        const captcha = await fetch.get(`${BMW_SERVER_HOST}${API_CAPTCHA_CHECK.replace("_MOBILE_", mobile)}`);
+        console.log("captcha", captcha);
+
+        const sendSms = await fetch.post(`${BMW_SERVER_HOST}${API_SEND_SMS}`, {
+            mobile,
+            deviceId: "12345ABCDE11"
+        });
+        console.log("send_sms", sendSms);
+        return sendSms.data.otpID;
+    }
+
     /**
      * 从服务器获取token
      * @param {string} mobile 用户名
-     * @param {string} password 密码
      * @returns {Promise<{data: {access_token: string, refresh_token: string, token_type: string}, code: number, error: boolean}>}
      */
-    async get_token(mobile, password) {
-        if (!mobile || !password) {
-            throw new Error("mobile or password is empty");
-        }
-        const rsa_resp = await this.get_public_key();
-        const public_key = rsa_resp.data.value;
-        const encrypt_password = rsa_encrypt(password, public_key);
+    async get_token(mobile) {
+        const optid = await this.send_sms(mobile);
+        const sms_code = await fetch_sms_code();
         const payload = {
             "mobile": mobile,
-            "password": encrypt_password,
+            "otpId": optid,
+            "otpMsg": sms_code
         }
-        const resp = await fetch.post(`${BMW_SERVER_HOST}${API_LOGIN}`, payload);
+        const resp = await fetch.post(`${BMW_SERVER_HOST}${API_SMS_LOGIN}`, payload).catch(error => {
+            console.log(error.response)
+        });
         this.access_token = resp.data.access_token;
         this.refresh_token = resp.data.refresh_token;
         this.token_type = resp.data.token_type;
@@ -277,17 +303,15 @@ class myBMWClient {
         } else {
             const __dirname = dirname(fileURLToPath(import.meta.url));
             let username = undefined;
-            let password = undefined;
             if (!fs.existsSync(__dirname + "/token.json")) {
                 const ret = await fetch_userinfo();
                 username = ret.username;
-                password = ret.password;
             } else {
                 const storage = JSON.parse(fs.readFileSync(__dirname + "/token.json"));
                 this.access_token = storage["BMW_ACCESS_TOKEN"];
                 this.refresh_token = storage["BMW_REFRESH_TOKEN"];
             }
-            if (await this.init_token(username, password)) {
+            if (await this.init_token(username)) {
                 fs.writeFileSync(__dirname + "/token.json", JSON.stringify({
                     "BMW_ACCESS_TOKEN": this.access_token,
                     "BMW_REFRESH_TOKEN": this.refresh_token
@@ -305,7 +329,7 @@ class myBMWClient {
      * @param {string} password 密码
      * @returns {Promise<boolean>} 是否初始化成功
      */
-    async init_token(username, password) {
+    async init_token(username) {
         if (!this.is_token_expired(this.access_token)) {
             console.log("accsess token is fine");
         } else if (!this.is_token_expired(this.refresh_token)) {
@@ -316,7 +340,7 @@ class myBMWClient {
             this.access_token = undefined;
             this.refresh_token = undefined;
             console.log("all token expired, fetch new token...");
-            await this.get_token(username, password);
+            await this.get_token(username);
         }
 
         if (this.access_token) {
@@ -386,7 +410,7 @@ class myBMWClient {
             console.warn("没有可供分享的文章，跳过分享");
             return;
         }
-        const aritcleIndex = getRandomInt(0, articles.length);
+        const aritcleIndex = 0;
         const article_id = articles[aritcleIndex].articleId;
         const article_title = articles[aritcleIndex].articleTitle;
         const payload = {
@@ -439,6 +463,7 @@ async function main() {
     const client = new myBMWClient();
     await client.load_token(is_github_action);
     await client.do_check_in();
+    exit(0);
 }
 
 try {
