@@ -48,7 +48,7 @@ fetch.interceptors.response.use(function (response) {
     return data;
 }, function (error) {
     if (error.request) {
-        if (if error.response && error.response.status === 401) {
+        if (error.response && error.response.status === 401) {
             console.warn("token失效，请重新登录");
             exit(1);
         }
