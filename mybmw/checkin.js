@@ -11,7 +11,7 @@ import { Octokit } from "@octokit/rest";
 import { exit } from "process";
 
 
-const MYBMW_VERSION = "2.3.0(13603)";
+const MYBMW_VERSION = "2.5.0(14963)";
 const BMW_SERVER_HOST = "https://myprofile.bmw.com.cn";
 
 const API_PUBLIC_KEY = "/eadrax-coas/v1/cop/publickey";
