@@ -80,8 +80,8 @@ class Sign(Base):
 
     @staticmethod
     def get_ds():
-        # v2.3.0-web @povsister & @journey-ad
-        n = 'h8w582wxwgqvahcdkpvdhbh2w9casgfl'
+        # 2.34.1-web @povsister & @journey-ad
+        n = '9nQiU3AV0rJSIBWgdynfoGMGKaklfbM7'
         i = str(int(time.time()))
         r = ''.join(random.sample(string.ascii_lowercase + string.digits, 6))
         c = hexdigest('salt=' + n + '&t=' + i + '&r=' + r)
@@ -182,7 +182,7 @@ class Sign(Base):
             # 0:      success
             # -5003:  already signed in
             if code != 0:
-                message_list.append(response)
+                message_list.append(response['message'])
                 continue
             message['total_sign_day'] = total_sign_day + 1
             message['status'] = response['message']
