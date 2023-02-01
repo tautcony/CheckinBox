@@ -21,7 +21,7 @@ jobs:
           echo "::set-output name=ubuntu::$(lsb_release -cs)"
 
       - id: cache-nodejs
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.npm
           key: ${{ steps.env-version.outputs.ubuntu }}-node-${{ hashFiles('**/package-lock.json') }}
