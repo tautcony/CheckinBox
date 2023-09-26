@@ -11,6 +11,7 @@ UID_CRED_KEY = os.environ.get("SKLAND_UID_CRED_KEY")
 
 SIGN_URL = "https://zonai.skland.com/api/v1/game/attendance"
 
+
 class SKLandCheckIn(CheckIn):
     def _checkin(self, session, get, post, info, error, uid_cred_key=None):
         [uid, cred_key] = uid_cred_key.split("&")
@@ -28,15 +29,16 @@ class SKLandCheckIn(CheckIn):
         r = post(SIGN_URL, headers=headers, data=data)
         try:
             resp = json.loads(r.text)
-            message = resp.get("message")
             data = resp.get("data")
             if resp.get("code") == 0:
                 print("签到成功")
                 for award in resp.get("data").get("awards"):
-                    print(f"此次签到获得了{award.get('count')}单位的{award.get('resource').get('name')}({award.get('resource').get('type')})")
+                    print(f"此次签到获得了{award.get('count')}单位的{award.get('resource').get('name')}\
+                          ({award.get('resource').get('type')})")
                     print(f"奖励类型为：{award.get('type')}")
             else:
-                print(resp)
+                message = resp.get("message")
+                print(message)
                 print("签到失败，请检查以上信息...")
         except:
             print(r.text)
