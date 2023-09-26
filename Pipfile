@@ -10,9 +10,10 @@ beautifulsoup4 = "*"
 cryptography = "*"
 lxml = "*"
 cloudscraper = "*"
+bimmer-connected = "*"
 
 [dev-packages]
 flake8 = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.11"

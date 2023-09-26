@@ -9,7 +9,7 @@ jobs:
   run:
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -18,7 +18,7 @@ jobs:
 
       - id: env-version
         run: |
-          echo "::set-output name=ubuntu::$(lsb_release -cs)"
+          echo "ubuntu=$(lsb_release -cs)" >> $GITHUB_OUTPUT
 
       - id: cache-nodejs
         uses: actions/cache@v3
