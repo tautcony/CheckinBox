@@ -21,7 +21,7 @@ jobs:
 
       - id: env-version
         run: |
-          echo "python=$(python3 -c 'import platform;print(platform.python_version())') >> $GITHUB_OUTPUT"
+          echo "python=$(python3 -c 'import platform;print(platform.python_version())')" >> $GITHUB_OUTPUT
           echo "ubuntu=$(lsb_release -cs)" >> $GITHUB_OUTPUT
 
       - id: cache-pipenv
