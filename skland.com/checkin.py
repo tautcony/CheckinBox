@@ -103,7 +103,7 @@ class SKLandCheckIn(CheckIn):
 
 
 if __name__ == "__main__":
-    if UID_CRED_KEY is None:
+    if UID_CRED_KEY is None or UID_CRED_KEY == "":
         print("未找到环境变量：SKLAND_UID_CRED_KEY")
         exit(0)
     [uid, cred_key] = UID_CRED_KEY.split("&")
