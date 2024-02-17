@@ -9,10 +9,10 @@ jobs:
   run:
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 16
 
@@ -21,7 +21,7 @@ jobs:
           echo "ubuntu=$(lsb_release -cs)" >> $GITHUB_OUTPUT
 
       - id: cache-nodejs
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ steps.env-version.outputs.ubuntu }}-node-${{ hashFiles('**/package-lock.json') }}
